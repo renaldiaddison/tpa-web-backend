@@ -24,15 +24,14 @@ func UserRegister(ctx context.Context, input model.NewUser) (interface{}, error)
 		return nil, err
 	}
 
-	email.SendEmail(createdUser.Email, createdUser.ID)
+	link, err := ActivationLinkCreate(ctx, createdUser.ID)
 
-	// token, err := JwtGenerate(ctx, createdUser.ID)
-	// if err != nil {
-	// 	return nil, err
-	// }
+	if err != nil {
+		return nil, err
+	}
 
-	return map[string]interface{}{
-	}, nil
+	email.SendEmail(createdUser.Email, link)
+	return map[string]interface{}{}, nil
 }
 
 func UserLogin(ctx context.Context, email string, password string) (interface{}, error) {
@@ -62,7 +61,7 @@ func UserLogin(ctx context.Context, email string, password string) (interface{},
 	return map[string]interface{}{
 		"id":    getUser.ID,
 		"token": token,
-		"name":  getUser.FirstName + getUser.LastName,
+		"name":  getUser.FirstName + " " + getUser.LastName,
 		"email": getUser.Email,
 	}, nil
 }

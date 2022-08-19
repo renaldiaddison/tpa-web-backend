@@ -12,13 +12,13 @@ const SENDER_NAME = "linkHEdIn <linkhedin@gmail.com>"
 const SENDER_EMAIL = "addisonrenaldi@gmail.com"
 const SENDER_EMAIL_PASSWORD = "jfytkhnqrdsfeasf"
 
-func SendEmail(userEmail string, userId string) {
+func SendEmail(userEmail string, link string) {
+
 	mail := gomail.NewMessage()
 
 	mail.SetHeader("From", SENDER_NAME)
 	mail.SetHeader("To", userEmail)
 	mail.SetHeader("Subject", "linkHEdIn Account Verification")
-	link := "http://localhost:5173/" + userId
 	mail.SetBody("text/html", "This is your linkHEdIn verification link!! "+link)
 
 	dial := gomail.NewDialer(SMTP_HOST, SMTP_PORT, SENDER_EMAIL, SENDER_EMAIL_PASSWORD)
