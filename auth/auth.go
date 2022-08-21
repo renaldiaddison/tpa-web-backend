@@ -4,38 +4,41 @@ import (
 	"context"
 	"errors"
 
-	"github.com/renaldiaddison/tpa-web-backend/email"
 	"github.com/renaldiaddison/tpa-web-backend/graph/model"
+	"github.com/renaldiaddison/tpa-web-backend/mail"
+	"github.com/renaldiaddison/tpa-web-backend/service"
+	"github.com/renaldiaddison/tpa-web-backend/tools"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 	"gorm.io/gorm"
 )
 
-func UserRegister(ctx context.Context, input model.NewUser) (interface{}, error) {
-	_, err := UserGetByEmail(ctx, input.Email)
+func UserRegister(ctx context.Context, input model.NewUser) (*model.User, error) {
+	_, err := service.UserGetByEmail(ctx, input.Email)
 
 	if err == nil {
 		if err != gorm.ErrRecordNotFound {
-			return nil, err
+			return nil, &gqlerror.Error{
+				Message: "Email is already taken",
+			}
 		}
 	}
 
-	createdUser, err := UserCreate(ctx, input)
+	createdUser, err := service.UserCreate(ctx, input)
 	if err != nil {
 		return nil, err
 	}
 
-	link, err := ActivationLinkCreate(ctx, createdUser.ID)
-
+	link, err := service.ActivationLinkCreate(ctx, createdUser.ID)
 	if err != nil {
 		return nil, err
 	}
 
-	email.SendEmail(createdUser.Email, link)
-	return map[string]interface{}{}, nil
+	mail.SendEmail("This is your linkHEdIn's account activation link!! ", "linkHEdIn Account Activation", createdUser.Email, link)
+	return createdUser, nil
 }
 
 func UserLogin(ctx context.Context, email string, password string) (interface{}, error) {
-	getUser, err := UserGetByEmail(ctx, email)
+	getUser, err := service.UserGetByEmail(ctx, email)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, &gqlerror.Error{
@@ -49,11 +52,11 @@ func UserLogin(ctx context.Context, email string, password string) (interface{},
 		return nil, errors.New("Your account hasn't been authenticated")
 	}
 
-	if err := ComparePassword(getUser.Password, password); err != nil {
-		return nil, err
+	if err := tools.ComparePassword(getUser.Password, password); err != nil {
+		return nil, errors.New("Wrong Credentials")
 	}
 
-	token, err := JwtGenerate(ctx, getUser.ID)
+	token, err := service.JwtGenerate(ctx, getUser.ID)
 	if err != nil {
 		return nil, err
 	}

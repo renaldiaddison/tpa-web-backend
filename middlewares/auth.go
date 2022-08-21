@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/renaldiaddison/tpa-web-backend/auth"
+	"github.com/renaldiaddison/tpa-web-backend/service"
 )
 
 type authString string
@@ -21,13 +21,13 @@ func AuthMiddleware(next http.Handler) http.Handler {
 		bearer := "Bearer "
 		autho = autho[len(bearer):]
 
-		validate, err := auth.JwtValidate(context.Background(), autho)
+		validate, err := service.JwtValidate(context.Background(), autho)
 		if err != nil || !validate.Valid {
 			http.Error(w, "Invalid token", http.StatusForbidden)
 			return
 		}
 
-		customClaim, _ := validate.Claims.(*auth.JwtCustomClaim)
+		customClaim, _ := validate.Claims.(*service.JwtCustomClaim)
 
 		ctx := context.WithValue(r.Context(), authString("auth"), customClaim)
 
@@ -36,7 +36,7 @@ func AuthMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-func CtxValue(ctx context.Context) *auth.JwtCustomClaim {
-	raw, _ := ctx.Value(authString("auth")).(*auth.JwtCustomClaim)
+func CtxValue(ctx context.Context) *service.JwtCustomClaim {
+	raw, _ := ctx.Value(authString("auth")).(*service.JwtCustomClaim)
 	return raw
 }

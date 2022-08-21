@@ -37,8 +37,8 @@ type Mutation {
   login(input: UserCredentials!): Any!
   register(input: NewUser!): Any!
 
-  createUser(input: NewUser!): User!
   updateUser(id: ID!, input: NewUser!): User!
   deleteUser(id: ID!): User!
   activateUser(id: ID!): Any!
+  resetPassword(email: String!, newPassword: String!): Any!
 }

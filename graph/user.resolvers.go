@@ -6,10 +6,10 @@ package graph
 import (
 	"context"
 
-	"github.com/google/uuid"
 	"github.com/renaldiaddison/tpa-web-backend/auth"
 	"github.com/renaldiaddison/tpa-web-backend/graph/generated"
 	"github.com/renaldiaddison/tpa-web-backend/graph/model"
+	"github.com/renaldiaddison/tpa-web-backend/tools"
 )
 
 // Login is the resolver for the login field.
@@ -20,21 +20,6 @@ func (r *mutationResolver) Login(ctx context.Context, input model.UserCredential
 // Register is the resolver for the register field.
 func (r *mutationResolver) Register(ctx context.Context, input model.NewUser) (interface{}, error) {
 	return auth.UserRegister(ctx, input)
-}
-
-// CreateUser is the resolver for the createUser field.
-func (r *mutationResolver) CreateUser(ctx context.Context, input model.NewUser) (*model.User, error) {
-	model := &model.User{
-		ID:        uuid.NewString(),
-		Email:     input.Email,
-		FirstName: input.FirstName,
-		LastName:  input.LastName,
-		Password:  input.Password,
-		IsActive:  false,
-	}
-
-	err := r.DB.Create(model).Error
-	return model, err
 }
 
 // UpdateUser is the resolver for the updateUser field.
@@ -61,16 +46,40 @@ func (r *mutationResolver) DeleteUser(ctx context.Context, id string) (*model.Us
 
 // ActivateUser is the resolver for the activateUser field.
 func (r *mutationResolver) ActivateUser(ctx context.Context, id string) (interface{}, error) {
-	model := new(model.User)
-	if err := r.DB.First(model, "id = ?", id).Error; err != nil {
+	user := new(model.User)
+	link := new(model.ActivationLink)
+	if err := r.DB.First(user, "id = ?", id).Error; err != nil {
 		panic(err)
 	}
-	if is_active := model.IsActive; is_active == false {
-		model.IsActive = true
+	if is_active := user.IsActive; is_active == false {
+		user.IsActive = true
 	} else {
-		model.IsActive = false
+		user.IsActive = false
 	}
-	return model, r.DB.Save(model).Error
+
+	if err := r.DB.Delete(link, "user_id = ?", id).Error; err != nil {
+		panic(err)
+	}
+
+	return user, r.DB.Save(user).Error
+}
+
+// ResetPassword is the resolver for the resetPassword field.
+func (r *mutationResolver) ResetPassword(ctx context.Context, email string, newPassword string) (interface{}, error) {
+	user := new(model.User)
+	link := new(model.ResetPasswordLink)
+
+	if err := r.DB.First(user, "email = ?", email).Error; err != nil {
+		panic(err)
+	}
+
+	if err := r.DB.Delete(link, "email = ?", email).Error; err != nil {
+		panic(err)
+	}
+
+	user.Password = tools.HashPassword(newPassword)
+
+	return user, r.DB.Save(user).Error
 }
 
 // User is the resolver for the user field.

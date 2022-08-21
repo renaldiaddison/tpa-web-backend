@@ -1,4 +1,4 @@
-package auth
+package service
 
 import (
 	"context"
@@ -20,5 +20,5 @@ func ActivationLinkCreate(ctx context.Context, input string) (string, error) {
 		return "", err
 	}
 
-	return "http://localhost:5173/" + link.ID, nil
+	return "http://localhost:5173/activate-account/" + link.ID, nil
 }

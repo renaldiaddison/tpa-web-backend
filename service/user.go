@@ -1,4 +1,4 @@
-package auth
+package service
 
 import (
 	"context"
@@ -6,12 +6,13 @@ import (
 	"github.com/google/uuid"
 	"github.com/renaldiaddison/tpa-web-backend/database"
 	"github.com/renaldiaddison/tpa-web-backend/graph/model"
+	"github.com/renaldiaddison/tpa-web-backend/tools"
 )
 
 func UserCreate(ctx context.Context, input model.NewUser) (*model.User, error) {
 	db := database.GetDatabase()
 
-	input.Password = HashPassword(input.Password)
+	input.Password = tools.HashPassword(input.Password)
 	user := model.User{
 		ID:        uuid.NewString(),
 		FirstName: input.FirstName,

@@ -6,4 +6,5 @@ func MigrateDatabase() {
 	db := GetDatabase()
 	db.AutoMigrate(&model.User{})
 	db.AutoMigrate(&model.ActivationLink{})
+	db.AutoMigrate(&model.ResetPasswordLink{})
 }
