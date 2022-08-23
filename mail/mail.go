@@ -9,8 +9,8 @@ import (
 const SMTP_HOST = "smtp.gmail.com"
 const SMTP_PORT = 587
 const SENDER_NAME = "linkHEdIn <linkhedin@gmail.com>"
-const SENDER_EMAIL = "addisonrenaldi@gmail.com"
-const SENDER_EMAIL_PASSWORD = "jfytkhnqrdsfeasf"
+const SENDER_EMAIL = "renacierr@gmail.com"
+const SENDER_EMAIL_PASSWORD = "txqkhfsshskjkfyk"
 
 func SendEmail(text string, subject string, to string, link string) {
 
