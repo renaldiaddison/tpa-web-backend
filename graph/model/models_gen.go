@@ -9,6 +9,10 @@ type NewUser struct {
 	Password  string `json:"password"`
 }
 
+type Search struct {
+	Users []*User `json:"users"`
+}
+
 type UserCredentials struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`

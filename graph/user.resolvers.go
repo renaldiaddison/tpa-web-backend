@@ -5,6 +5,7 @@ package graph
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/renaldiaddison/tpa-web-backend/auth"
 	"github.com/renaldiaddison/tpa-web-backend/graph/generated"
@@ -32,6 +33,16 @@ func (r *mutationResolver) UpdateUser(ctx context.Context, id string, input mode
 	model.FirstName = input.FirstName
 	model.LastName = input.LastName
 	model.Password = input.Password
+	return model, r.DB.Save(model).Error
+}
+
+// UpdateProfilePicture is the resolver for the updateProfilePicture field.
+func (r *mutationResolver) UpdateProfilePicture(ctx context.Context, id string, imageURL string) (interface{}, error) {
+	model := new(model.User)
+	if err := r.DB.First(model, "id = ?", id).Error; err != nil {
+		panic(err)
+	}
+	model.ProfilePicture = imageURL
 	return model, r.DB.Save(model).Error
 }
 
@@ -99,11 +110,30 @@ func (r *queryResolver) Protected(ctx context.Context) (string, error) {
 	return "Success", nil
 }
 
+// FollowedUser is the resolver for the followed_user field.
+func (r *userResolver) FollowedUser(ctx context.Context, obj *model.User) ([]string, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+// ConnectedUser is the resolver for the connected_user field.
+func (r *userResolver) ConnectedUser(ctx context.Context, obj *model.User) ([]string, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+// RequestConnect is the resolver for the request_connect field.
+func (r *userResolver) RequestConnect(ctx context.Context, obj *model.User) ([]string, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
 // Mutation returns generated.MutationResolver implementation.
 func (r *Resolver) Mutation() generated.MutationResolver { return &mutationResolver{r} }
 
 // Query returns generated.QueryResolver implementation.
 func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
 
+// User returns generated.UserResolver implementation.
+func (r *Resolver) User() generated.UserResolver { return &userResolver{r} }
+
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
+type userResolver struct{ *Resolver }

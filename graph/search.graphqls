@@ -1,0 +1,7 @@
+type Search {
+    users: [User!]! @goField(forceResolver: true)
+}
+
+extend type Query{
+    search(keyword: String!, limit: Int!, offset: Int!): Search!
+}

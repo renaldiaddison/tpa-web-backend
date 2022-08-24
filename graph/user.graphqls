@@ -2,16 +2,33 @@
 #
 # https://gqlgen.com/getting-started/
 
+
+directive @goField(
+  forceResolver: Boolean
+  name: String
+) on FIELD_DEFINITION | INPUT_FIELD_DEFINITION
+
 directive @auth on FIELD_DEFINITION
 
 scalar Any
+
 
 type User {
   id: ID!
   email: String!
   firstName: String!
   lastName: String!
+  additionalName: String!
   is_active: Boolean!
+  profile_picture: String!
+  background_picture: String!
+  headline: String!
+  about: String!
+  location: String!
+  profile_views: Int!
+  followed_user: [String!]!
+  connected_user: [String!]!
+  request_connect: [String!]!
 }
 
 type Query {
@@ -38,6 +55,7 @@ type Mutation {
   register(input: NewUser!): Any!
 
   updateUser(id: ID!, input: NewUser!): User!
+  updateProfilePicture(id: ID!, imageUrl: String!): Any!
   deleteUser(id: ID!): User!
   activateUser(id: ID!): Any!
   resetPassword(email: String!, newPassword: String!): Any!
