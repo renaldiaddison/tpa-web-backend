@@ -32,8 +32,8 @@ type User {
 }
 
 type Query {
-  user(id: ID!): User!
-  users: [User!]!
+  getUserById(id: ID!): User!
+  getAllUsers: [User!]!
 
   protected: String! @auth
 }

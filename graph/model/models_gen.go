@@ -2,6 +2,19 @@
 
 package model
 
+type NewExperience struct {
+	UserID         string `json:"UserID"`
+	Title          string `json:"Title"`
+	EmploymentType string `json:"EmploymentType"`
+	CompanyName    string `json:"CompanyName"`
+	Location       string `json:"Location"`
+	Active         bool   `json:"Active"`
+	StartYear      string `json:"StartYear"`
+	EndYear        string `json:"EndYear"`
+	Industry       string `json:"Industry"`
+	Description    string `json:"Description"`
+}
+
 type NewUser struct {
 	Email     string `json:"email"`
 	FirstName string `json:"firstName"`
@@ -16,4 +29,16 @@ type Search struct {
 type UserCredentials struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
+}
+
+type NewEducation struct {
+	UserID       string  `json:"UserID"`
+	School       string  `json:"School"`
+	Degree       string  `json:"Degree"`
+	FieldOfStudy string  `json:"FieldOfStudy"`
+	StartDate    string  `json:"StartDate"`
+	EndDate      string  `json:"EndDate"`
+	Grade        float64 `json:"Grade"`
+	Activities   string  `json:"Activities"`
+	Description  string  `json:"Description"`
 }

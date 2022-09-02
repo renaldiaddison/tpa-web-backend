@@ -93,14 +93,14 @@ func (r *mutationResolver) ResetPassword(ctx context.Context, email string, newP
 	return user, r.DB.Save(user).Error
 }
 
-// User is the resolver for the user field.
-func (r *queryResolver) User(ctx context.Context, id string) (*model.User, error) {
+// GetUserByID is the resolver for the getUserById field.
+func (r *queryResolver) GetUserByID(ctx context.Context, id string) (*model.User, error) {
 	model := new(model.User)
 	return model, r.DB.First(model, "id = ?", id).Error
 }
 
-// Users is the resolver for the users field.
-func (r *queryResolver) Users(ctx context.Context) ([]*model.User, error) {
+// GetAllUsers is the resolver for the getAllUsers field.
+func (r *queryResolver) GetAllUsers(ctx context.Context) ([]*model.User, error) {
 	var models []*model.User
 	return models, r.DB.Find(&models).Error
 }
