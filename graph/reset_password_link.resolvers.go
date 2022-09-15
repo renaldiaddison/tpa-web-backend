@@ -11,13 +11,23 @@ import (
 	"github.com/renaldiaddison/tpa-web-backend/graph/model"
 	"github.com/renaldiaddison/tpa-web-backend/mail"
 	"github.com/renaldiaddison/tpa-web-backend/service"
+	"github.com/vektah/gqlparser/v2/gqlerror"
+	"gorm.io/gorm"
 )
 
 // CreateAndSendResetLink is the resolver for the createAndSendResetLink field.
 func (r *mutationResolver) CreateAndSendResetLink(ctx context.Context, email string) (string, error) {
-	_, err := service.ResetLinkGetByEmail(ctx, email)
 
-	if err == nil {
+	if _, err := service.UserGetByEmail(ctx, email); err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return "", &gqlerror.Error{
+				Message: "Email not found",
+			}
+		}
+		return "", err
+	}
+
+	if _, err := service.ResetLinkGetByEmail(ctx, email); err == nil {
 		return "", errors.New("You have already requested, please check your email!")
 	}
 

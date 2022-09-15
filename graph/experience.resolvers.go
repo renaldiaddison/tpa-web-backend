@@ -61,12 +61,10 @@ func (r *mutationResolver) UpdateExperience(ctx context.Context, id string, inpu
 // DeleteExperience is the resolver for the deleteExperience field.
 func (r *mutationResolver) DeleteExperience(ctx context.Context, id string) (interface{}, error) {
 	experience := new(model.Experience)
-	err := r.DB.Delete(experience, "id=?", id).Error
-	if err != nil {
-		return "", err
-	} else {
-		return "delete experience successful", err
+	if err := r.DB.First(experience, "id=?", id).Error; err != nil {
+		panic(err)
 	}
+	return experience, nil
 }
 
 // UserExperience is the resolver for the userExperience field.

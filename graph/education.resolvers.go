@@ -27,7 +27,7 @@ func (r *mutationResolver) CreateEducation(ctx context.Context, input model.NewE
 	}
 	err := r.DB.Create(model).Error
 	if err != nil {
-		return "", err
+		panic(err)
 	}
 	return model, nil
 }
@@ -37,7 +37,7 @@ func (r *mutationResolver) UpdateEducation(ctx context.Context, id string, input
 	var model *model.Education
 
 	if err := r.DB.First(&model, "id = ?", id).Error; err != nil {
-		return "Error", err
+		panic(err)
 	}
 	model.School = input.School
 	model.Degree = input.Degree

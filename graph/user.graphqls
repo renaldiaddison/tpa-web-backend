@@ -35,7 +35,6 @@ type Query {
   getUserById(id: ID!): User!
   getAllUsers: [User!]!
 
-  protected: String! @auth
 }
 
 input NewUser {
@@ -56,7 +55,14 @@ type Mutation {
 
   updateUser(id: ID!, input: NewUser!): User!
   updateProfilePicture(id: ID!, imageUrl: String!): Any!
+  updateBackgroundPicture(id: ID!, imageUrl: String!): Any!
   deleteUser(id: ID!): User!
   activateUser(id: ID!): Any!
   resetPassword(email: String!, newPassword: String!): Any!
+
+  requestConnect(id: String!, recipientID: String!): Any!
+  acceptConnect(id: String!, senderID: String!): Any!
+  ignoreConnect(id: String!, senderID: String!): Any!
+  follow(id: String!, followedID: String!): Any!
+  unfollow(id: String!, unfollowedID: String!): Any!
 }
