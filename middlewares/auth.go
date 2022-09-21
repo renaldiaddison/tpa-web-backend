@@ -3,40 +3,37 @@ package middlewares
 import (
 	"context"
 	"net/http"
-
-	"github.com/renaldiaddison/tpa-web-backend/service"
 )
 
-type authString string
+type ctxString string
 
 func AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		autho := r.Header.Get("Authorization")
+		auth := r.Header.Get("Authorization")
 
-		if autho == "" {
+		if auth == "" {
 			next.ServeHTTP(w, r)
 			return
 		}
 
-		bearer := "Bearer "
-		autho = autho[len(bearer):]
+		getAuthToken := auth[len("Bearer "):]
 
-		validate, err := service.JwtValidate(context.Background(), autho)
+		validate, err := JwtValidate(context.Background(), getAuthToken)
 		if err != nil || !validate.Valid {
 			http.Error(w, "Invalid token", http.StatusForbidden)
 			return
 		}
 
-		customClaim, _ := validate.Claims.(*service.JwtCustomClaim)
+		customClaim, _ := validate.Claims.(*JwtCustomClaim)
 
-		ctx := context.WithValue(r.Context(), authString("auth"), customClaim)
+		ctx := context.WithValue(r.Context(), ctxString("JwtValue"), customClaim)
 
 		r = r.WithContext(ctx)
 		next.ServeHTTP(w, r)
 	})
 }
 
-func CtxValue(ctx context.Context) *service.JwtCustomClaim {
-	raw, _ := ctx.Value(authString("auth")).(*service.JwtCustomClaim)
+func GetJwtValueData(ctx context.Context) *JwtCustomClaim {
+	raw, _ := ctx.Value(ctxString("JwtValue")).(*JwtCustomClaim)
 	return raw
 }

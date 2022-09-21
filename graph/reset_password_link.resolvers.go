@@ -17,7 +17,6 @@ import (
 
 // CreateAndSendResetLink is the resolver for the createAndSendResetLink field.
 func (r *mutationResolver) CreateAndSendResetLink(ctx context.Context, email string) (string, error) {
-
 	if _, err := service.UserGetByEmail(ctx, email); err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return "", &gqlerror.Error{

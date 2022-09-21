@@ -68,7 +68,7 @@ func (r *queryResolver) UserEducation(ctx context.Context, userID string) ([]*mo
 
 // MyEducation is the resolver for the myEducation field.
 func (r *queryResolver) MyEducation(ctx context.Context) ([]*model.Education, error) {
-	val := *middlewares.CtxValue(ctx)
+	val := *middlewares.GetJwtValueData(ctx)
 	var models []*model.Education
-	return models, r.DB.Where("user_id = ?", val.ID).Find(&models).Error
+	return models, r.DB.Where("user_id = ?", val.Userid).Find(&models).Error
 }

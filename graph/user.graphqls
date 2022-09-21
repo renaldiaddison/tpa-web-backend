@@ -25,10 +25,24 @@ type User {
   headline: String!
   about: String!
   location: String!
-  profile_views: Int!
-  followed_user: [String!]!
-  connected_user: [String!]!
-  request_connect: [String!]!
+  profileLink: String!
+  visits: [Visit!]! @goField(forceResolver: true)
+  follows: [Follow!]! @goField(forceResolver: true)
+  blocks: [Block!] @goField(forceResolver: true)
+  connections: [Connection!]! @goField(forceResolver: true)
+  connectRequests: [ConnectRequest!]! @goField(forceResolver: true)
+  experiences: [Experience!]! @goField(forceResolver: true)
+  educations: [Education!]! @goField(forceResolver: true)
+}
+
+type Visit {
+  userId: ID!
+  visitId: ID!
+}
+
+type Follow{
+  userId: ID!
+  followId: ID!
 }
 
 type Query {
@@ -60,9 +74,7 @@ type Mutation {
   activateUser(id: ID!): Any!
   resetPassword(email: String!, newPassword: String!): Any!
 
-  requestConnect(id: String!, recipientID: String!): Any!
-  acceptConnect(id: String!, senderID: String!): Any!
-  ignoreConnect(id: String!, senderID: String!): Any!
-  follow(id: String!, followedID: String!): Any!
-  unfollow(id: String!, unfollowedID: String!): Any!
+  followUser(id1: ID!, id2: ID!): Any!  @auth
+  unFollowUser(id1: ID!, id2: ID!): Any!  @auth
+  visitUser(id1: ID!, id2: ID!): Any!  @auth
 }

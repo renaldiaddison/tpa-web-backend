@@ -2,6 +2,49 @@
 
 package model
 
+import (
+	"time"
+)
+
+type Block struct {
+	UserID  string `json:"userId"`
+	BlockID string `json:"blockId"`
+}
+
+type CreateJob struct {
+	Title          string `json:"title"`
+	CompanyName    string `json:"companyName"`
+	Workplace      string `json:"workplace"`
+	City           string `json:"city"`
+	Country        string `json:"country"`
+	EmploymentType string `json:"employmentType"`
+	Description    string `json:"description"`
+}
+
+type Hashtag struct {
+	ID      string `json:"id"`
+	Hashtag string `json:"hashtag"`
+}
+
+type InputPost struct {
+	SenderID string `json:"senderId"`
+	Text     string `json:"text"`
+	PhotoURL string `json:"photoUrl"`
+	VideoURL string `json:"videoUrl"`
+}
+
+type Job struct {
+	ID             string    `json:"id"`
+	Title          string    `json:"title"`
+	CompanyName    string    `json:"companyName"`
+	Workplace      string    `json:"workplace"`
+	City           string    `json:"city"`
+	Country        string    `json:"country"`
+	EmploymentType string    `json:"employmentType"`
+	Description    string    `json:"description"`
+	CreatedAt      time.Time `json:"createdAt"`
+}
+
 type NewExperience struct {
 	UserID         string `json:"UserID"`
 	Title          string `json:"Title"`
@@ -20,6 +63,11 @@ type NewUser struct {
 	FirstName string `json:"firstName"`
 	LastName  string `json:"lastName"`
 	Password  string `json:"password"`
+}
+
+type Search struct {
+	Users []*User `json:"Users"`
+	Posts []*Post `json:"Posts"`
 }
 
 type UserCredentials struct {

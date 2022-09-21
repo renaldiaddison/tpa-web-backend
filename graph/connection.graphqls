@@ -1,0 +1,9 @@
+type Connection {
+    id:ID!
+    user1: User! @goField(forceResolver: true)
+    user2: User! @goField(forceResolver: true)
+}
+
+extend type Mutation { 
+    addConnection(user1ID:ID! , user2ID:ID!) : Connection!
+}

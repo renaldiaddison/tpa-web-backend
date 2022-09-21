@@ -1,0 +1,34 @@
+scalar Time
+
+type Post{
+    id: ID!
+    text: String!
+    photoUrl: String!
+    videoUrl: String!
+    createdAt: Time!
+    Sender: User! @goField(forceResolver: true)
+    Likes: [LikePosts!]! @goField(forceResolver: true)
+    Comments: [Comment!]! @goField(forceResolver: true)
+}
+
+type LikePosts {
+    postId: ID!
+    userId: ID!
+}
+
+extend type Query {
+    Posts(Limit:Int!, Offset:Int!): [Post!]! @auth
+}
+
+extend type Mutation {
+    CreatePost(input: InputPost!): Post!  @auth
+    LikePost(postId:ID! , userId:ID!): LikePosts!  @auth
+    UnLikePost(postId:ID! , userId:ID!): LikePosts!  @auth
+}   
+
+input InputPost {
+    senderId: ID!
+    text: String!
+    photoUrl: String!
+    videoUrl: String!
+}

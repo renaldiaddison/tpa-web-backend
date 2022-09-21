@@ -9,4 +9,10 @@ func MigrateDatabase() {
 	db.AutoMigrate(&model.ResetPasswordLink{})
 	db.AutoMigrate(&model.Education{})
 	db.AutoMigrate(&model.Experience{})
+	db.AutoMigrate(&model.Post{})
+	db.AutoMigrate(&model.Block{})
+	db.AutoMigrate(&model.Comment{})
+	db.AutoMigrate(&model.Hashtag{})
+	db.AutoMigrate(&model.Job{})
+	db.AutoMigrate(&model.LikeComment{})
 }

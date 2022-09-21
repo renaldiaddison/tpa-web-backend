@@ -1,0 +1,13 @@
+type Notification {
+    id: ID!
+    message: String!
+    fromUser: User! @goField(forceResolver: true)
+    toUser: User! @goField(forceResolver: true)
+}
+
+extend type Query {
+    userNotification(toUserId:ID!) : [Notification!]!
+}
+extend type Mutation {
+    addNotification(toUserId:ID! , fromUserId:ID! , message:String!): Notification!
+}

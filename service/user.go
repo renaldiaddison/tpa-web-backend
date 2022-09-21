@@ -27,9 +27,9 @@ func UserCreate(ctx context.Context, input model.NewUser) (*model.User, error) {
 		About:             "",
 		Location:          "",
 		ProfileViews:      0,
-		FollowedUser:      []string{},
-		RequestConnect:    []string{},
-		ConnectedUser:     []string{},
+		// FollowedUser:      []string{},
+		// RequestConnect:    []string{},
+		// ConnectedUser:     []string{},
 	}
 
 	if err := db.Model(user).Create(&user).Error; err != nil {

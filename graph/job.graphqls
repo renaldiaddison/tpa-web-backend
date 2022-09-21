@@ -1,0 +1,29 @@
+type Job {
+    id: ID!
+    title: String!
+    companyName: String!
+    workplace: String!
+    city: String!
+    country: String!
+    employmentType: String!
+    description: String!
+    createdAt: Time!
+}
+
+extend type Query {
+    Jobs: [Job!]!
+}
+
+extend type Mutation {
+    addJob(title:String! , companyName:String! , workplace:String! , city:String! , country:String! , employmentType:String! , description:String!): Job! 
+}
+
+input CreateJob {
+    title: String!
+    companyName: String!
+    workplace: String!
+    city: String!
+    country: String!
+    employmentType: String!
+    description: String!
+}

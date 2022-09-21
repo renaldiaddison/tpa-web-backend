@@ -6,6 +6,7 @@ import (
 
 	"github.com/renaldiaddison/tpa-web-backend/graph/model"
 	"github.com/renaldiaddison/tpa-web-backend/mail"
+	"github.com/renaldiaddison/tpa-web-backend/middlewares"
 	"github.com/renaldiaddison/tpa-web-backend/service"
 	"github.com/renaldiaddison/tpa-web-backend/tools"
 	"github.com/vektah/gqlparser/v2/gqlerror"
@@ -56,7 +57,7 @@ func UserLogin(ctx context.Context, email string, password string) (interface{},
 		return nil, errors.New("Wrong Credentials")
 	}
 
-	token, err := service.JwtGenerate(ctx, getUser.ID)
+	token, err := middlewares.JwtGenerate(ctx, getUser.ID)
 	if err != nil {
 		return nil, err
 	}

@@ -5,6 +5,7 @@ package graph
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/renaldiaddison/tpa-web-backend/auth"
 	"github.com/renaldiaddison/tpa-web-backend/graph/generated"
@@ -103,110 +104,79 @@ func (r *mutationResolver) ResetPassword(ctx context.Context, email string, newP
 	return user, r.DB.Save(user).Error
 }
 
-// RequestConnect is the resolver for the requestConnect field.
-func (r *mutationResolver) RequestConnect(ctx context.Context, id string, recipientID string) (interface{}, error) {
-	user := new(model.User)
-	err := r.DB.First(user, "id = ?", recipientID).Error
-	if err != nil {
-		panic(err)
-	}
-	user.RequestConnect = append(user.RequestConnect, id)
-	return map[string]interface{}{}, r.DB.Save(user).Error
+// FollowUser is the resolver for the followUser field.
+func (r *mutationResolver) FollowUser(ctx context.Context, id1 string, id2 string) (interface{}, error) {
+	modelFollow := new(model.Follow)
+
+	modelFollow.UserID = id1
+	modelFollow.FollowID = id2
+
+	r.DB.Table("user_follows").Create(modelFollow)
+
+	var modelFollows []*model.Follow
+	r.DB.Table("user_follows").Find(&modelFollows, "follow_id = ?", id2)
+
+	return map[string]interface{}{
+		"length": len(modelFollows),
+	}, nil
 }
 
-// AcceptConnect is the resolver for the acceptConnect field.
-func (r *mutationResolver) AcceptConnect(ctx context.Context, id string, senderID string) (interface{}, error) {
-	recepient := new(model.User)
-	sender := new(model.User)
-	if err := r.DB.First(recepient, "id = ?", id).Error; err != nil {
-		panic(err)
-	}
-	if err := r.DB.First(sender, "id = ?", senderID).Error; err != nil {
-		panic(err)
+// UnFollowUser is the resolver for the unFollowUser field.
+func (r *mutationResolver) UnFollowUser(ctx context.Context, id1 string, id2 string) (interface{}, error) {
+	modelFollow := new(model.Follow)
+
+	if err := r.DB.Table("user_follows").First(&modelFollow, "user_id = ? AND follow_id = ?", id1, id2).Error; err != nil {
+		return nil, err
 	}
 
-	new_arr := make([]string, (len(recepient.RequestConnect) - 1))
-	k := 0
-	for i := 0; i < (len(recepient.RequestConnect) - 1); {
-		if recepient.RequestConnect[i] != senderID {
-			new_arr[i] = recepient.RequestConnect[k]
-			k++
-			i++
-		} else {
-			k++
+	if modelFollow.UserID == "" {
+		var modelFollows []*model.Follow
+		r.DB.Table("user_follows").Find(&modelFollows, "follow_id = ?", id2)
+
+		return map[string]interface{}{
+			"length": len(modelFollows),
+		}, nil
+	} else {
+		r.DB.Table("user_follows").Delete(&modelFollow, "user_id = ? AND follow_id = ?", id1, id2)
+
+		var modelFollows []*model.Follow
+		r.DB.Table("user_follows").Find(&modelFollows, "follow_id = ?", id2)
+
+		return map[string]interface{}{
+			"length": len(modelFollows),
+		}, nil
+	}
+}
+
+// VisitUser is the resolver for the visitUser field.
+func (r *mutationResolver) VisitUser(ctx context.Context, id1 string, id2 string) (interface{}, error) {
+	modelVisit := new(model.Visit)
+
+	r.DB.Table("user_visits").First(&modelVisit, "user_id = ? AND visit_id = ?", id1, id2)
+
+	if modelVisit.UserID != "" {
+		var modelVisits []*model.Visit
+		r.DB.Table("user_visits").Find(&modelVisits, "visit_id = ?", id2)
+
+		return map[string]interface{}{
+			"length": len(modelVisits),
+		}, nil
+	} else {
+
+		modelVisit.UserID = id1
+		modelVisit.VisitID = id2
+
+		if err := r.DB.Table("user_visits").Create(modelVisit).Error; err == nil {
+			service.AddNotification(r.DB, ctx, id2, id1, "Visit Your Profile")
 		}
-	}
-	recepient.RequestConnect = new_arr
-	sender.ConnectedUser = append(sender.ConnectedUser, id)
-	recepient.ConnectedUser = append(recepient.ConnectedUser, senderID)
-	if err := r.DB.Save(recepient).Error; err != nil {
-		panic(err)
-	}
-	if err := r.DB.Save(sender).Error; err != nil {
-		panic(err)
-	}
-	return map[string]interface{}{}, nil
-}
 
-// IgnoreConnect is the resolver for the ignoreConnect field.
-func (r *mutationResolver) IgnoreConnect(ctx context.Context, id string, senderID string) (interface{}, error) {
-	recepient := new(model.User)
-	if err := r.DB.First(recepient, "id=?", id).Error; err != nil {
-		panic(err)
-	}
-	new_arr := make([]string, (len(recepient.RequestConnect) - 1))
-	k := 0
-	for i := 0; i < (len(recepient.RequestConnect) - 1); {
-		if recepient.RequestConnect[i] != senderID {
-			new_arr[i] = recepient.RequestConnect[k]
-			k++
-			i++
-		} else {
-			k++
-		}
-	}
-	recepient.RequestConnect = new_arr
-	if err := r.DB.Save(recepient).Error; err != nil {
-		panic(err)
-	}
-	return map[string]interface{}{}, nil
-}
+		var modelVisits []*model.Visit
+		r.DB.Table("user_visits").Find(&modelVisits, "visit_id = ?", id2)
 
-// Follow is the resolver for the follow field.
-func (r *mutationResolver) Follow(ctx context.Context, id string, followedID string) (interface{}, error) {
-	user := new(model.User)
-	if err := r.DB.First(user, "id=?", id).Error; err != nil {
-		return "failed", err
+		return map[string]interface{}{
+			"length": len(modelVisits),
+		}, nil
 	}
-	user.FollowedUser = append(user.FollowedUser, followedID)
-	if err := r.DB.Save(user).Error; err != nil {
-		return "failed", err
-	}
-	return map[string]interface{}{}, nil
-}
-
-// Unfollow is the resolver for the unfollow field.
-func (r *mutationResolver) Unfollow(ctx context.Context, id string, unfollowedID string) (interface{}, error) {
-	user := new(model.User)
-	if err := r.DB.First(user, "id=?", id).Error; err != nil {
-		panic(err)
-	}
-	new_arr := make([]string, (len(user.FollowedUser) - 1))
-	k := 0
-	for i := 0; i < (len(user.FollowedUser) - 1); {
-		if user.FollowedUser[i] != unfollowedID {
-			new_arr[i] = user.FollowedUser[k]
-			k++
-			i++
-		} else {
-			k++
-		}
-	}
-	user.FollowedUser = new_arr
-	if err := r.DB.Save(user).Error; err != nil {
-		panic(err)
-	}
-	return map[string]interface{}{}, nil
 }
 
 // GetUserByID is the resolver for the getUserById field.
@@ -221,19 +191,70 @@ func (r *queryResolver) GetAllUsers(ctx context.Context) ([]*model.User, error) 
 	return models, r.DB.Find(&models).Error
 }
 
-// FollowedUser is the resolver for the followed_user field.
-func (r *userResolver) FollowedUser(ctx context.Context, obj *model.User) ([]string, error) {
-	return obj.FollowedUser, nil
+// ProfileLink is the resolver for the profileLink field.
+func (r *userResolver) ProfileLink(ctx context.Context, obj *model.User) (string, error) {
+	panic(fmt.Errorf("not implemented"))
 }
 
-// ConnectedUser is the resolver for the connected_user field.
-func (r *userResolver) ConnectedUser(ctx context.Context, obj *model.User) ([]string, error) {
-	return obj.ConnectedUser, nil
+// Visits is the resolver for the visits field.
+func (r *userResolver) Visits(ctx context.Context, obj *model.User) ([]*model.Visit, error) {
+	var modelVisits []*model.Visit
+
+	return modelVisits, r.DB.Table("user_visits").Find(&modelVisits, "visit_id = ?", obj.ID).Error
 }
 
-// RequestConnect is the resolver for the request_connect field.
-func (r *userResolver) RequestConnect(ctx context.Context, obj *model.User) ([]string, error) {
-	return obj.RequestConnect, nil
+// Follows is the resolver for the follows field.
+func (r *userResolver) Follows(ctx context.Context, obj *model.User) ([]*model.Follow, error) {
+	var modelFollow []*model.Follow
+
+	return modelFollow, r.DB.Table("user_follows").Find(&modelFollow, "follow_id = ? ", obj.ID).Error
+}
+
+// Blocks is the resolver for the blocks field.
+func (r *userResolver) Blocks(ctx context.Context, obj *model.User) ([]*model.Block, error) {
+	var modelBlocks []*model.Block
+
+	if err := r.DB.Table("user_blocks").Find(&modelBlocks, "user_id = ?", obj.ID).Error; err != nil {
+		return nil, err
+	}
+
+	return modelBlocks, nil
+}
+
+// Connections is the resolver for the connections field.
+func (r *userResolver) Connections(ctx context.Context, obj *model.User) ([]*model.Connection, error) {
+	var modelConnections []*model.Connection
+
+	if err := r.DB.Where("user1_id = ?", obj.ID).Or("user2_id = ?", obj.ID).Find(&modelConnections).Error; err != nil {
+		return nil, err
+	}
+
+	return modelConnections, nil
+}
+
+// ConnectRequests is the resolver for the connectRequests field.
+func (r *userResolver) ConnectRequests(ctx context.Context, obj *model.User) ([]*model.ConnectRequest, error) {
+	var modelConnectionRequests []*model.ConnectRequest
+
+	if err := r.DB.Find(&modelConnectionRequests, "to_user_id = ?", obj.ID).Error; err != nil {
+		return nil, err
+	}
+
+	return modelConnectionRequests, nil
+}
+
+// Experiences is the resolver for the experiences field.
+func (r *userResolver) Experiences(ctx context.Context, obj *model.User) ([]*model.Experience, error) {
+	var modelExperiences []*model.Experience
+
+	return modelExperiences, r.DB.Where("user_id = ?", obj.ID).Find(&modelExperiences).Error
+}
+
+// Educations is the resolver for the educations field.
+func (r *userResolver) Educations(ctx context.Context, obj *model.User) ([]*model.Education, error) {
+	var modelEducations []*model.Education
+
+	return modelEducations, r.DB.Where("user_id = ? ", obj.ID).Find(&modelEducations).Error
 }
 
 // Mutation returns generated.MutationResolver implementation.
