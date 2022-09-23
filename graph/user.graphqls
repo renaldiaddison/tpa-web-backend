@@ -26,13 +26,13 @@ type User {
   about: String!
   location: String!
   profileLink: String!
-  visits: [Visit!]! @goField(forceResolver: true)
-  follows: [Follow!]! @goField(forceResolver: true)
-  blocks: [Block!] @goField(forceResolver: true)
-  connections: [Connection!]! @goField(forceResolver: true)
-  connectRequests: [ConnectRequest!]! @goField(forceResolver: true)
-  experiences: [Experience!]! @goField(forceResolver: true)
-  educations: [Education!]! @goField(forceResolver: true)
+  Visits: [Visit!]! @goField(forceResolver: true)
+  Follows: [Follow!]! @goField(forceResolver: true)
+  Block: [Block!] @goField(forceResolver: true)
+  Connection: [Connection!]! @goField(forceResolver: true)
+  ConnectRequest: [ConnectRequest!]! @goField(forceResolver: true)
+  Experiences: [Experience!]! @goField(forceResolver: true)
+  Educations: [Education!]! @goField(forceResolver: true)
 }
 
 type Visit {
@@ -48,7 +48,7 @@ type Follow{
 type Query {
   getUserById(id: ID!): User!
   getAllUsers: [User!]!
-
+UserSuggestion(userId: ID!) : [User!]!
 }
 
 input NewUser {

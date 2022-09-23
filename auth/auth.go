@@ -64,6 +64,6 @@ func UserLogin(ctx context.Context, email string, password string) (interface{},
 
 	return map[string]interface{}{
 		"token": token,
-		"user":  getUser,
+		"user_id":  getUser.ID,
 	}, nil
 }

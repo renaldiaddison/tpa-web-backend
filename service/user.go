@@ -26,10 +26,17 @@ func UserCreate(ctx context.Context, input model.NewUser) (*model.User, error) {
 		Headline:          "",
 		About:             "",
 		Location:          "",
-		ProfileViews:      0,
-		// FollowedUser:      []string{},
-		// RequestConnect:    []string{},
-		// ConnectedUser:     []string{},
+		ProfileLink:       "",
+		Visits:            []*model.User{},
+		Follows:           []*model.User{},
+		Comment:           []*model.Comment{},
+		LikeComment:       []*model.LikeComment{},
+		Connection:        []*model.Connection{},
+		ConnectRequest:    []*model.ConnectRequest{},
+		Block:             []*model.User{},
+		Experiences:       []*model.Experience{},
+		Educations:        []*model.Education{},
+		Notification:      []*model.Notification{},
 	}
 
 	if err := db.Model(user).Create(&user).Error; err != nil {

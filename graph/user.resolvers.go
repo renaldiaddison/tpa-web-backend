@@ -12,6 +12,8 @@ import (
 	"github.com/renaldiaddison/tpa-web-backend/graph/model"
 	"github.com/renaldiaddison/tpa-web-backend/service"
 	"github.com/renaldiaddison/tpa-web-backend/tools"
+	"github.com/samber/lo"
+	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
 // Login is the resolver for the login field.
@@ -191,9 +193,86 @@ func (r *queryResolver) GetAllUsers(ctx context.Context) ([]*model.User, error) 
 	return models, r.DB.Find(&models).Error
 }
 
-// ProfileLink is the resolver for the profileLink field.
-func (r *userResolver) ProfileLink(ctx context.Context, obj *model.User) (string, error) {
-	panic(fmt.Errorf("not implemented"))
+// UserSuggestion is the resolver for the UserSuggestion field.
+func (r *queryResolver) UserSuggestion(ctx context.Context, userID string) ([]*model.User, error) {
+	var modelUsers []*model.User
+	var userIdList []string
+	var userSuggestionId []string
+
+	var connections1 []*model.Connection
+	var connections2 []*model.Connection
+
+	if err := r.DB.Find(&connections1, "user1_id", userID).Error; err != nil {
+		return nil, err
+	}
+
+	if err := r.DB.Find(&connections2, "user2_id", userID).Error; err != nil {
+		return nil, err
+	}
+
+	connetions1Ids := lo.Map(connections1, func(connectionData *model.Connection, _ int) string {
+		return connectionData.User2ID
+	})
+
+	connetions2Ids := lo.Map(connections2, func(connectionData *model.Connection, _ int) string {
+		return connectionData.User1ID
+	})
+
+	userIdList = append(userIdList, connetions1Ids...)
+	userIdList = append(userIdList, connetions2Ids...)
+	userIdList = lo.Uniq(userIdList)
+
+	var friendConnection1 []*model.Connection
+	var friendConnection2 []*model.Connection
+
+	if err := r.DB.Where("user1_id IN ?", userIdList).Not("user2_id = ?", userID).Find(&friendConnection1).Error; err != nil {
+		return nil, err
+	}
+
+	if err := r.DB.Where("user2_id IN ?", userIdList).Not("user1_id = ?", userID).Find(&friendConnection2).Error; err != nil {
+		return nil, err
+	}
+
+	fmt.Println(userIdList)
+
+	userSuggestion1Ids := lo.Map(friendConnection1, func(connectionData *model.Connection, _ int) string {
+		return connectionData.User2ID
+	})
+
+	userSuggestion2Ids := lo.Map(friendConnection2, func(connectionData *model.Connection, _ int) string {
+		return connectionData.User1ID
+	})
+
+	userSuggestionId = append(userSuggestionId, userSuggestion1Ids...)
+	userSuggestionId = append(userSuggestionId, userSuggestion2Ids...)
+	userSuggestionId = lo.Uniq(userSuggestionId)
+	fmt.Println(userSuggestionId)
+
+	var finalUserSuggestionId []string
+	for _, suggestionIdUser := range userSuggestionId {
+		checkSame := false
+		for _, userConnectionId := range userIdList {
+			if suggestionIdUser == userConnectionId {
+				checkSame = true
+			}
+		}
+
+		if !checkSame {
+			finalUserSuggestionId = append(finalUserSuggestionId, suggestionIdUser)
+		}
+	}
+
+	fmt.Println(finalUserSuggestionId)
+
+	if len(finalUserSuggestionId) == 0 {
+		return nil, gqlerror.Errorf("No Connection User Data")
+	}
+
+	if err := r.DB.Find(&modelUsers, finalUserSuggestionId).Error; err != nil {
+		return nil, err
+	}
+
+	return modelUsers, nil
 }
 
 // Visits is the resolver for the visits field.
@@ -210,8 +289,8 @@ func (r *userResolver) Follows(ctx context.Context, obj *model.User) ([]*model.F
 	return modelFollow, r.DB.Table("user_follows").Find(&modelFollow, "follow_id = ? ", obj.ID).Error
 }
 
-// Blocks is the resolver for the blocks field.
-func (r *userResolver) Blocks(ctx context.Context, obj *model.User) ([]*model.Block, error) {
+// Block is the resolver for the Block field.
+func (r *userResolver) Block(ctx context.Context, obj *model.User) ([]*model.Block, error) {
 	var modelBlocks []*model.Block
 
 	if err := r.DB.Table("user_blocks").Find(&modelBlocks, "user_id = ?", obj.ID).Error; err != nil {
@@ -221,8 +300,8 @@ func (r *userResolver) Blocks(ctx context.Context, obj *model.User) ([]*model.Bl
 	return modelBlocks, nil
 }
 
-// Connections is the resolver for the connections field.
-func (r *userResolver) Connections(ctx context.Context, obj *model.User) ([]*model.Connection, error) {
+// Connection is the resolver for the Connection field.
+func (r *userResolver) Connection(ctx context.Context, obj *model.User) ([]*model.Connection, error) {
 	var modelConnections []*model.Connection
 
 	if err := r.DB.Where("user1_id = ?", obj.ID).Or("user2_id = ?", obj.ID).Find(&modelConnections).Error; err != nil {
@@ -232,8 +311,8 @@ func (r *userResolver) Connections(ctx context.Context, obj *model.User) ([]*mod
 	return modelConnections, nil
 }
 
-// ConnectRequests is the resolver for the connectRequests field.
-func (r *userResolver) ConnectRequests(ctx context.Context, obj *model.User) ([]*model.ConnectRequest, error) {
+// ConnectRequest is the resolver for the ConnectRequest field.
+func (r *userResolver) ConnectRequest(ctx context.Context, obj *model.User) ([]*model.ConnectRequest, error) {
 	var modelConnectionRequests []*model.ConnectRequest
 
 	if err := r.DB.Find(&modelConnectionRequests, "to_user_id = ?", obj.ID).Error; err != nil {

@@ -64,7 +64,7 @@ func (r *mutationResolver) DeleteExperience(ctx context.Context, id string) (int
 	if err := r.DB.First(experience, "id=?", id).Error; err != nil {
 		panic(err)
 	}
-	return experience, nil
+	return experience, r.DB.Delete(experience).Error
 }
 
 // UserExperience is the resolver for the userExperience field.

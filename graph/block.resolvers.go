@@ -5,17 +5,23 @@ package graph
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/renaldiaddison/tpa-web-backend/graph/model"
 )
 
 // AddBlock is the resolver for the addBlock field.
 func (r *mutationResolver) AddBlock(ctx context.Context, userID string, blockID string) (*model.Block, error) {
-	panic(fmt.Errorf("not implemented"))
+	modelBlock := &model.Block{
+		UserID:  userID,
+		BlockID: blockID,
+	}
+
+	return modelBlock, r.DB.Table("user_blocks").Create(modelBlock).Error
 }
 
 // DeleteBlock is the resolver for the deleteBlock field.
 func (r *mutationResolver) DeleteBlock(ctx context.Context, userID string, blockID string) (*model.Block, error) {
-	panic(fmt.Errorf("not implemented"))
+	modelBlock := new(model.Block)
+
+	return modelBlock, r.DB.Table("user_blocks").Delete(modelBlock, "user_id = ? AND block_id = ?", userID, blockID).Error
 }

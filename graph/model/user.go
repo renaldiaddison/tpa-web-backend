@@ -13,7 +13,7 @@ type User struct {
 	Headline          string            `json:"headline"`
 	About             string            `json:"about"`
 	Location          string            `json:"location"`
-	ProfileViews      int               `json:"profile_views"`
+	ProfileLink       string            `json:"profileLink"` 
 	Visits            []*User           `json:"Visit" gorm:"many2many:user_visits"`
 	Follows           []*User           `json:"Follow" gorm:"many2many:user_follows"`
 	Comment           []*Comment        `json:"Comment" gorm:"foreignKey:CommenterID;"`
