@@ -79,7 +79,6 @@ type ComplexityRoot struct {
 	ConnectRequest struct {
 		FromUser func(childComplexity int) int
 		ID       func(childComplexity int) int
-		Message  func(childComplexity int) int
 		ToUser   func(childComplexity int) int
 	}
 
@@ -153,7 +152,7 @@ type ComplexityRoot struct {
 		ActivateUser            func(childComplexity int, id string) int
 		AddBlock                func(childComplexity int, userID string, blockID string) int
 		AddComment              func(childComplexity int, postID string, commenterID string, comment string) int
-		AddConnectRequest       func(childComplexity int, fromUserID string, toUserID string, message string) int
+		AddConnectRequest       func(childComplexity int, fromUserID string, toUserID string) int
 		AddConnection           func(childComplexity int, user1id string, user2id string) int
 		AddHashtag              func(childComplexity int, hashtag string) int
 		AddJob                  func(childComplexity int, title string, companyName string, workplace string, city string, country string, employmentType string, description string) int
@@ -182,7 +181,7 @@ type ComplexityRoot struct {
 		UpdateEducation         func(childComplexity int, id string, input model.NewEducation) int
 		UpdateExperience        func(childComplexity int, id string, input model.NewExperience) int
 		UpdateProfilePicture    func(childComplexity int, id string, imageURL string) int
-		UpdateUser              func(childComplexity int, id string, input model.NewUser) int
+		UpdateUser              func(childComplexity int, id string, input model.UpdateUser) int
 		VisitUser               func(childComplexity int, id1 string, id2 string) int
 	}
 
@@ -246,12 +245,10 @@ type ComplexityRoot struct {
 		Experiences       func(childComplexity int) int
 		FirstName         func(childComplexity int) int
 		Follows           func(childComplexity int) int
-		Headline          func(childComplexity int) int
 		ID                func(childComplexity int) int
 		IsActive          func(childComplexity int) int
 		LastName          func(childComplexity int) int
 		Location          func(childComplexity int) int
-		ProfileLink       func(childComplexity int) int
 		ProfilePicture    func(childComplexity int) int
 		Visits            func(childComplexity int) int
 	}
@@ -281,7 +278,7 @@ type LikeCommentResolver interface {
 type MutationResolver interface {
 	Login(ctx context.Context, input model.UserCredentials) (interface{}, error)
 	Register(ctx context.Context, input model.NewUser) (interface{}, error)
-	UpdateUser(ctx context.Context, id string, input model.NewUser) (*model.User, error)
+	UpdateUser(ctx context.Context, id string, input model.UpdateUser) (*model.User, error)
 	UpdateProfilePicture(ctx context.Context, id string, imageURL string) (interface{}, error)
 	UpdateBackgroundPicture(ctx context.Context, id string, imageURL string) (interface{}, error)
 	DeleteUser(ctx context.Context, id string) (*model.User, error)
@@ -297,7 +294,7 @@ type MutationResolver interface {
 	AddLikeComment(ctx context.Context, commentID string, userID string) (*model.LikeComment, error)
 	DeleteLikeComment(ctx context.Context, commentID string, userID string) (*model.LikeComment, error)
 	AddReply(ctx context.Context, commenterID string, postID string, replyToCommentID string, comment string) (*model.Comment, error)
-	AddConnectRequest(ctx context.Context, fromUserID string, toUserID string, message string) (*model.ConnectRequest, error)
+	AddConnectRequest(ctx context.Context, fromUserID string, toUserID string) (*model.ConnectRequest, error)
 	DeleteConnectRequest(ctx context.Context, fromUserID string, toUserID string) (*model.ConnectRequest, error)
 	AddConnection(ctx context.Context, user1id string, user2id string) (*model.Connection, error)
 	CreateEducation(ctx context.Context, input model.NewEducation) (interface{}, error)
@@ -475,13 +472,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.ConnectRequest.ID(childComplexity), true
-
-	case "ConnectRequest.message":
-		if e.complexity.ConnectRequest.Message == nil {
-			break
-		}
-
-		return e.complexity.ConnectRequest.Message(childComplexity), true
 
 	case "ConnectRequest.toUser":
 		if e.complexity.ConnectRequest.ToUser == nil {
@@ -830,7 +820,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.AddConnectRequest(childComplexity, args["fromUserId"].(string), args["toUserId"].(string), args["message"].(string)), true
+		return e.complexity.Mutation.AddConnectRequest(childComplexity, args["fromUserId"].(string), args["toUserId"].(string)), true
 
 	case "Mutation.addConnection":
 		if e.complexity.Mutation.AddConnection == nil {
@@ -1178,7 +1168,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.UpdateUser(childComplexity, args["id"].(string), args["input"].(model.NewUser)), true
+		return e.complexity.Mutation.UpdateUser(childComplexity, args["id"].(string), args["input"].(model.UpdateUser)), true
 
 	case "Mutation.visitUser":
 		if e.complexity.Mutation.VisitUser == nil {
@@ -1565,13 +1555,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.User.Follows(childComplexity), true
 
-	case "User.headline":
-		if e.complexity.User.Headline == nil {
-			break
-		}
-
-		return e.complexity.User.Headline(childComplexity), true
-
 	case "User.id":
 		if e.complexity.User.ID == nil {
 			break
@@ -1599,13 +1582,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.User.Location(childComplexity), true
-
-	case "User.profileLink":
-		if e.complexity.User.ProfileLink == nil {
-			break
-		}
-
-		return e.complexity.User.ProfileLink(childComplexity), true
 
 	case "User.profile_picture":
 		if e.complexity.User.ProfilePicture == nil {
@@ -1647,6 +1623,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputInputPost,
 		ec.unmarshalInputNewExperience,
 		ec.unmarshalInputNewUser,
+		ec.unmarshalInputUpdateUser,
 		ec.unmarshalInputUserCredentials,
 		ec.unmarshalInputnewEducation,
 	)
@@ -1766,11 +1743,10 @@ extend type Query {
     id:ID!
     fromUser:User! @goField(forceResolver: true)
     toUser:User! @goField(forceResolver: true)
-    message:String!
 }
 
 extend type Mutation {
-    addConnectRequest(fromUserId:ID! , toUserId:ID! , message:String!) : ConnectRequest!
+    addConnectRequest(fromUserId:ID! , toUserId:ID!) : ConnectRequest!
     deleteConnectRequest(fromUserId:ID! , toUserId:ID!) : ConnectRequest!
 }`, BuiltIn: false},
 	{Name: "../connection.graphqls", Input: `type Connection {
@@ -1810,7 +1786,7 @@ input newEducation{
 
 extend type Query{
     userEducation(userID: ID!): [Education!]! @auth
-    myEducation: [Education!]! @auth 
+    myEducation: [Education!]! @auth
 }
 
 extend type Mutation {
@@ -1968,7 +1944,6 @@ extend type Query{
 #
 # https://gqlgen.com/getting-started/
 
-
 directive @goField(
   forceResolver: Boolean
   name: String
@@ -1977,7 +1952,6 @@ directive @goField(
 directive @auth on FIELD_DEFINITION
 
 scalar Any
-
 
 type User {
   id: ID!
@@ -1988,10 +1962,8 @@ type User {
   is_active: Boolean!
   profile_picture: String!
   background_picture: String!
-  headline: String!
   about: String!
   location: String!
-  profileLink: String!
   Visits: [Visit!]! @goField(forceResolver: true)
   Follows: [Follow!]! @goField(forceResolver: true)
   Block: [Block!] @goField(forceResolver: true)
@@ -2006,7 +1978,7 @@ type Visit {
   visitId: ID!
 }
 
-type Follow{
+type Follow {
   userId: ID!
   followId: ID!
 }
@@ -2014,7 +1986,7 @@ type Follow{
 type Query {
   getUserById(id: ID!): User!
   getAllUsers: [User!]!
-UserSuggestion(userId: ID!) : [User!]!
+  UserSuggestion(userId: ID!): [User!]!
 }
 
 input NewUser {
@@ -2022,6 +1994,14 @@ input NewUser {
   firstName: String!
   lastName: String!
   password: String!
+}
+
+input UpdateUser {
+  firstName: String!
+  lastName: String!
+  additionalName: String!
+  about: String!
+  location: String!
 }
 
 input UserCredentials {
@@ -2033,17 +2013,18 @@ type Mutation {
   login(input: UserCredentials!): Any!
   register(input: NewUser!): Any!
 
-  updateUser(id: ID!, input: NewUser!): User!
+  updateUser(id: ID!, input: UpdateUser!): User!
   updateProfilePicture(id: ID!, imageUrl: String!): Any!
   updateBackgroundPicture(id: ID!, imageUrl: String!): Any!
   deleteUser(id: ID!): User!
   activateUser(id: ID!): Any!
   resetPassword(email: String!, newPassword: String!): Any!
 
-  followUser(id1: ID!, id2: ID!): Any!  @auth
-  unFollowUser(id1: ID!, id2: ID!): Any!  @auth
-  visitUser(id1: ID!, id2: ID!): Any!  @auth
-}`, BuiltIn: false},
+  followUser(id1: ID!, id2: ID!): Any! @auth
+  unFollowUser(id1: ID!, id2: ID!): Any! @auth
+  visitUser(id1: ID!, id2: ID!): Any! @auth
+}
+`, BuiltIn: false},
 }
 var parsedSchema = gqlparser.MustLoadSchema(sources...)
 
@@ -2207,15 +2188,6 @@ func (ec *executionContext) field_Mutation_addConnectRequest_args(ctx context.Co
 		}
 	}
 	args["toUserId"] = arg1
-	var arg2 string
-	if tmp, ok := rawArgs["message"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("message"))
-		arg2, err = ec.unmarshalNString2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["message"] = arg2
 	return args, nil
 }
 
@@ -2813,10 +2785,10 @@ func (ec *executionContext) field_Mutation_updateUser_args(ctx context.Context, 
 		}
 	}
 	args["id"] = arg0
-	var arg1 model.NewUser
+	var arg1 model.UpdateUser
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg1, err = ec.unmarshalNNewUser2githubᚗcomᚋrenaldiaddisonᚋtpaᚑwebᚑbackendᚋgraphᚋmodelᚐNewUser(ctx, tmp)
+		arg1, err = ec.unmarshalNUpdateUser2githubᚗcomᚋrenaldiaddisonᚋtpaᚑwebᚑbackendᚋgraphᚋmodelᚐUpdateUser(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -3585,14 +3557,10 @@ func (ec *executionContext) fieldContext_Comment_Commenter(ctx context.Context, 
 				return ec.fieldContext_User_profile_picture(ctx, field)
 			case "background_picture":
 				return ec.fieldContext_User_background_picture(ctx, field)
-			case "headline":
-				return ec.fieldContext_User_headline(ctx, field)
 			case "about":
 				return ec.fieldContext_User_about(ctx, field)
 			case "location":
 				return ec.fieldContext_User_location(ctx, field)
-			case "profileLink":
-				return ec.fieldContext_User_profileLink(ctx, field)
 			case "Visits":
 				return ec.fieldContext_User_Visits(ctx, field)
 			case "Follows":
@@ -3917,14 +3885,10 @@ func (ec *executionContext) fieldContext_ConnectRequest_fromUser(ctx context.Con
 				return ec.fieldContext_User_profile_picture(ctx, field)
 			case "background_picture":
 				return ec.fieldContext_User_background_picture(ctx, field)
-			case "headline":
-				return ec.fieldContext_User_headline(ctx, field)
 			case "about":
 				return ec.fieldContext_User_about(ctx, field)
 			case "location":
 				return ec.fieldContext_User_location(ctx, field)
-			case "profileLink":
-				return ec.fieldContext_User_profileLink(ctx, field)
 			case "Visits":
 				return ec.fieldContext_User_Visits(ctx, field)
 			case "Follows":
@@ -4001,14 +3965,10 @@ func (ec *executionContext) fieldContext_ConnectRequest_toUser(ctx context.Conte
 				return ec.fieldContext_User_profile_picture(ctx, field)
 			case "background_picture":
 				return ec.fieldContext_User_background_picture(ctx, field)
-			case "headline":
-				return ec.fieldContext_User_headline(ctx, field)
 			case "about":
 				return ec.fieldContext_User_about(ctx, field)
 			case "location":
 				return ec.fieldContext_User_location(ctx, field)
-			case "profileLink":
-				return ec.fieldContext_User_profileLink(ctx, field)
 			case "Visits":
 				return ec.fieldContext_User_Visits(ctx, field)
 			case "Follows":
@@ -4025,50 +3985,6 @@ func (ec *executionContext) fieldContext_ConnectRequest_toUser(ctx context.Conte
 				return ec.fieldContext_User_Educations(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _ConnectRequest_message(ctx context.Context, field graphql.CollectedField, obj *model.ConnectRequest) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_ConnectRequest_message(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Message, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(string)
-	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_ConnectRequest_message(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "ConnectRequest",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
 		},
 	}
 	return fc, nil
@@ -4173,14 +4089,10 @@ func (ec *executionContext) fieldContext_Connection_user1(ctx context.Context, f
 				return ec.fieldContext_User_profile_picture(ctx, field)
 			case "background_picture":
 				return ec.fieldContext_User_background_picture(ctx, field)
-			case "headline":
-				return ec.fieldContext_User_headline(ctx, field)
 			case "about":
 				return ec.fieldContext_User_about(ctx, field)
 			case "location":
 				return ec.fieldContext_User_location(ctx, field)
-			case "profileLink":
-				return ec.fieldContext_User_profileLink(ctx, field)
 			case "Visits":
 				return ec.fieldContext_User_Visits(ctx, field)
 			case "Follows":
@@ -4257,14 +4169,10 @@ func (ec *executionContext) fieldContext_Connection_user2(ctx context.Context, f
 				return ec.fieldContext_User_profile_picture(ctx, field)
 			case "background_picture":
 				return ec.fieldContext_User_background_picture(ctx, field)
-			case "headline":
-				return ec.fieldContext_User_headline(ctx, field)
 			case "about":
 				return ec.fieldContext_User_about(ctx, field)
 			case "location":
 				return ec.fieldContext_User_location(ctx, field)
-			case "profileLink":
-				return ec.fieldContext_User_profileLink(ctx, field)
 			case "Visits":
 				return ec.fieldContext_User_Visits(ctx, field)
 			case "Follows":
@@ -5925,14 +5833,10 @@ func (ec *executionContext) fieldContext_LikeComment_User(ctx context.Context, f
 				return ec.fieldContext_User_profile_picture(ctx, field)
 			case "background_picture":
 				return ec.fieldContext_User_background_picture(ctx, field)
-			case "headline":
-				return ec.fieldContext_User_headline(ctx, field)
 			case "about":
 				return ec.fieldContext_User_about(ctx, field)
 			case "location":
 				return ec.fieldContext_User_location(ctx, field)
-			case "profileLink":
-				return ec.fieldContext_User_profileLink(ctx, field)
 			case "Visits":
 				return ec.fieldContext_User_Visits(ctx, field)
 			case "Follows":
@@ -6166,7 +6070,7 @@ func (ec *executionContext) _Mutation_updateUser(ctx context.Context, field grap
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().UpdateUser(rctx, fc.Args["id"].(string), fc.Args["input"].(model.NewUser))
+		return ec.resolvers.Mutation().UpdateUser(rctx, fc.Args["id"].(string), fc.Args["input"].(model.UpdateUser))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -6207,14 +6111,10 @@ func (ec *executionContext) fieldContext_Mutation_updateUser(ctx context.Context
 				return ec.fieldContext_User_profile_picture(ctx, field)
 			case "background_picture":
 				return ec.fieldContext_User_background_picture(ctx, field)
-			case "headline":
-				return ec.fieldContext_User_headline(ctx, field)
 			case "about":
 				return ec.fieldContext_User_about(ctx, field)
 			case "location":
 				return ec.fieldContext_User_location(ctx, field)
-			case "profileLink":
-				return ec.fieldContext_User_profileLink(ctx, field)
 			case "Visits":
 				return ec.fieldContext_User_Visits(ctx, field)
 			case "Follows":
@@ -6412,14 +6312,10 @@ func (ec *executionContext) fieldContext_Mutation_deleteUser(ctx context.Context
 				return ec.fieldContext_User_profile_picture(ctx, field)
 			case "background_picture":
 				return ec.fieldContext_User_background_picture(ctx, field)
-			case "headline":
-				return ec.fieldContext_User_headline(ctx, field)
 			case "about":
 				return ec.fieldContext_User_about(ctx, field)
 			case "location":
 				return ec.fieldContext_User_location(ctx, field)
-			case "profileLink":
-				return ec.fieldContext_User_profileLink(ctx, field)
 			case "Visits":
 				return ec.fieldContext_User_Visits(ctx, field)
 			case "Follows":
@@ -7260,7 +7156,7 @@ func (ec *executionContext) _Mutation_addConnectRequest(ctx context.Context, fie
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().AddConnectRequest(rctx, fc.Args["fromUserId"].(string), fc.Args["toUserId"].(string), fc.Args["message"].(string))
+		return ec.resolvers.Mutation().AddConnectRequest(rctx, fc.Args["fromUserId"].(string), fc.Args["toUserId"].(string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -7291,8 +7187,6 @@ func (ec *executionContext) fieldContext_Mutation_addConnectRequest(ctx context.
 				return ec.fieldContext_ConnectRequest_fromUser(ctx, field)
 			case "toUser":
 				return ec.fieldContext_ConnectRequest_toUser(ctx, field)
-			case "message":
-				return ec.fieldContext_ConnectRequest_message(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type ConnectRequest", field.Name)
 		},
@@ -7356,8 +7250,6 @@ func (ec *executionContext) fieldContext_Mutation_deleteConnectRequest(ctx conte
 				return ec.fieldContext_ConnectRequest_fromUser(ctx, field)
 			case "toUser":
 				return ec.fieldContext_ConnectRequest_toUser(ctx, field)
-			case "message":
-				return ec.fieldContext_ConnectRequest_message(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type ConnectRequest", field.Name)
 		},
@@ -8543,14 +8435,10 @@ func (ec *executionContext) fieldContext_Notification_fromUser(ctx context.Conte
 				return ec.fieldContext_User_profile_picture(ctx, field)
 			case "background_picture":
 				return ec.fieldContext_User_background_picture(ctx, field)
-			case "headline":
-				return ec.fieldContext_User_headline(ctx, field)
 			case "about":
 				return ec.fieldContext_User_about(ctx, field)
 			case "location":
 				return ec.fieldContext_User_location(ctx, field)
-			case "profileLink":
-				return ec.fieldContext_User_profileLink(ctx, field)
 			case "Visits":
 				return ec.fieldContext_User_Visits(ctx, field)
 			case "Follows":
@@ -8627,14 +8515,10 @@ func (ec *executionContext) fieldContext_Notification_toUser(ctx context.Context
 				return ec.fieldContext_User_profile_picture(ctx, field)
 			case "background_picture":
 				return ec.fieldContext_User_background_picture(ctx, field)
-			case "headline":
-				return ec.fieldContext_User_headline(ctx, field)
 			case "about":
 				return ec.fieldContext_User_about(ctx, field)
 			case "location":
 				return ec.fieldContext_User_location(ctx, field)
-			case "profileLink":
-				return ec.fieldContext_User_profileLink(ctx, field)
 			case "Visits":
 				return ec.fieldContext_User_Visits(ctx, field)
 			case "Follows":
@@ -8931,14 +8815,10 @@ func (ec *executionContext) fieldContext_Post_Sender(ctx context.Context, field 
 				return ec.fieldContext_User_profile_picture(ctx, field)
 			case "background_picture":
 				return ec.fieldContext_User_background_picture(ctx, field)
-			case "headline":
-				return ec.fieldContext_User_headline(ctx, field)
 			case "about":
 				return ec.fieldContext_User_about(ctx, field)
 			case "location":
 				return ec.fieldContext_User_location(ctx, field)
-			case "profileLink":
-				return ec.fieldContext_User_profileLink(ctx, field)
 			case "Visits":
 				return ec.fieldContext_User_Visits(ctx, field)
 			case "Follows":
@@ -9129,14 +9009,10 @@ func (ec *executionContext) fieldContext_Query_getUserById(ctx context.Context, 
 				return ec.fieldContext_User_profile_picture(ctx, field)
 			case "background_picture":
 				return ec.fieldContext_User_background_picture(ctx, field)
-			case "headline":
-				return ec.fieldContext_User_headline(ctx, field)
 			case "about":
 				return ec.fieldContext_User_about(ctx, field)
 			case "location":
 				return ec.fieldContext_User_location(ctx, field)
-			case "profileLink":
-				return ec.fieldContext_User_profileLink(ctx, field)
 			case "Visits":
 				return ec.fieldContext_User_Visits(ctx, field)
 			case "Follows":
@@ -9224,14 +9100,10 @@ func (ec *executionContext) fieldContext_Query_getAllUsers(ctx context.Context, 
 				return ec.fieldContext_User_profile_picture(ctx, field)
 			case "background_picture":
 				return ec.fieldContext_User_background_picture(ctx, field)
-			case "headline":
-				return ec.fieldContext_User_headline(ctx, field)
 			case "about":
 				return ec.fieldContext_User_about(ctx, field)
 			case "location":
 				return ec.fieldContext_User_location(ctx, field)
-			case "profileLink":
-				return ec.fieldContext_User_profileLink(ctx, field)
 			case "Visits":
 				return ec.fieldContext_User_Visits(ctx, field)
 			case "Follows":
@@ -9308,14 +9180,10 @@ func (ec *executionContext) fieldContext_Query_UserSuggestion(ctx context.Contex
 				return ec.fieldContext_User_profile_picture(ctx, field)
 			case "background_picture":
 				return ec.fieldContext_User_background_picture(ctx, field)
-			case "headline":
-				return ec.fieldContext_User_headline(ctx, field)
 			case "about":
 				return ec.fieldContext_User_about(ctx, field)
 			case "location":
 				return ec.fieldContext_User_location(ctx, field)
-			case "profileLink":
-				return ec.fieldContext_User_profileLink(ctx, field)
 			case "Visits":
 				return ec.fieldContext_User_Visits(ctx, field)
 			case "Follows":
@@ -10683,14 +10551,10 @@ func (ec *executionContext) fieldContext_Search_Users(ctx context.Context, field
 				return ec.fieldContext_User_profile_picture(ctx, field)
 			case "background_picture":
 				return ec.fieldContext_User_background_picture(ctx, field)
-			case "headline":
-				return ec.fieldContext_User_headline(ctx, field)
 			case "about":
 				return ec.fieldContext_User_about(ctx, field)
 			case "location":
 				return ec.fieldContext_User_location(ctx, field)
-			case "profileLink":
-				return ec.fieldContext_User_profileLink(ctx, field)
 			case "Visits":
 				return ec.fieldContext_User_Visits(ctx, field)
 			case "Follows":
@@ -11126,50 +10990,6 @@ func (ec *executionContext) fieldContext_User_background_picture(ctx context.Con
 	return fc, nil
 }
 
-func (ec *executionContext) _User_headline(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_User_headline(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Headline, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(string)
-	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_User_headline(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "User",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
 func (ec *executionContext) _User_about(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_User_about(ctx, field)
 	if err != nil {
@@ -11246,50 +11066,6 @@ func (ec *executionContext) _User_location(ctx context.Context, field graphql.Co
 }
 
 func (ec *executionContext) fieldContext_User_location(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "User",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _User_profileLink(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_User_profileLink(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.ProfileLink, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(string)
-	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_User_profileLink(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "User",
 		Field:      field,
@@ -11546,8 +11322,6 @@ func (ec *executionContext) fieldContext_User_ConnectRequest(ctx context.Context
 				return ec.fieldContext_ConnectRequest_fromUser(ctx, field)
 			case "toUser":
 				return ec.fieldContext_ConnectRequest_toUser(ctx, field)
-			case "message":
-				return ec.fieldContext_ConnectRequest_message(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type ConnectRequest", field.Name)
 		},
@@ -13830,6 +13604,66 @@ func (ec *executionContext) unmarshalInputNewUser(ctx context.Context, obj inter
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputUpdateUser(ctx context.Context, obj interface{}) (model.UpdateUser, error) {
+	var it model.UpdateUser
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"firstName", "lastName", "additionalName", "about", "location"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "firstName":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("firstName"))
+			it.FirstName, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "lastName":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("lastName"))
+			it.LastName, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "additionalName":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("additionalName"))
+			it.AdditionalName, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "about":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("about"))
+			it.About, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "location":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("location"))
+			it.Location, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputUserCredentials(ctx context.Context, obj interface{}) (model.UserCredentials, error) {
 	var it model.UserCredentials
 	asMap := map[string]interface{}{}
@@ -14216,13 +14050,6 @@ func (ec *executionContext) _ConnectRequest(ctx context.Context, sel ast.Selecti
 				return innerFunc(ctx)
 
 			})
-		case "message":
-
-			out.Values[i] = ec._ConnectRequest_message(ctx, field, obj)
-
-			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&invalids, 1)
-			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -15857,13 +15684,6 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
-		case "headline":
-
-			out.Values[i] = ec._User_headline(ctx, field, obj)
-
-			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&invalids, 1)
-			}
 		case "about":
 
 			out.Values[i] = ec._User_about(ctx, field, obj)
@@ -15874,13 +15694,6 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 		case "location":
 
 			out.Values[i] = ec._User_location(ctx, field, obj)
-
-			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&invalids, 1)
-			}
-		case "profileLink":
-
-			out.Values[i] = ec._User_profileLink(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
@@ -17271,6 +17084,11 @@ func (ec *executionContext) marshalNTime2timeᚐTime(ctx context.Context, sel as
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) unmarshalNUpdateUser2githubᚗcomᚋrenaldiaddisonᚋtpaᚑwebᚑbackendᚋgraphᚋmodelᚐUpdateUser(ctx context.Context, v interface{}) (model.UpdateUser, error) {
+	res, err := ec.unmarshalInputUpdateUser(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) marshalNUser2githubᚗcomᚋrenaldiaddisonᚋtpaᚑwebᚑbackendᚋgraphᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v model.User) graphql.Marshaler {

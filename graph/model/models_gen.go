@@ -70,6 +70,14 @@ type Search struct {
 	Posts []*Post `json:"Posts"`
 }
 
+type UpdateUser struct {
+	FirstName      string `json:"firstName"`
+	LastName       string `json:"lastName"`
+	AdditionalName string `json:"additionalName"`
+	About          string `json:"about"`
+	Location       string `json:"location"`
+}
+
 type UserCredentials struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`

@@ -2,7 +2,6 @@
 #
 # https://gqlgen.com/getting-started/
 
-
 directive @goField(
   forceResolver: Boolean
   name: String
@@ -11,7 +10,6 @@ directive @goField(
 directive @auth on FIELD_DEFINITION
 
 scalar Any
-
 
 type User {
   id: ID!
@@ -22,10 +20,8 @@ type User {
   is_active: Boolean!
   profile_picture: String!
   background_picture: String!
-  headline: String!
   about: String!
   location: String!
-  profileLink: String!
   Visits: [Visit!]! @goField(forceResolver: true)
   Follows: [Follow!]! @goField(forceResolver: true)
   Block: [Block!] @goField(forceResolver: true)
@@ -40,7 +36,7 @@ type Visit {
   visitId: ID!
 }
 
-type Follow{
+type Follow {
   userId: ID!
   followId: ID!
 }
@@ -48,7 +44,7 @@ type Follow{
 type Query {
   getUserById(id: ID!): User!
   getAllUsers: [User!]!
-UserSuggestion(userId: ID!) : [User!]!
+  UserSuggestion(userId: ID!): [User!]!
 }
 
 input NewUser {
@@ -56,6 +52,14 @@ input NewUser {
   firstName: String!
   lastName: String!
   password: String!
+}
+
+input UpdateUser {
+  firstName: String!
+  lastName: String!
+  additionalName: String!
+  about: String!
+  location: String!
 }
 
 input UserCredentials {
@@ -67,14 +71,14 @@ type Mutation {
   login(input: UserCredentials!): Any!
   register(input: NewUser!): Any!
 
-  updateUser(id: ID!, input: NewUser!): User!
+  updateUser(id: ID!, input: UpdateUser!): User!
   updateProfilePicture(id: ID!, imageUrl: String!): Any!
   updateBackgroundPicture(id: ID!, imageUrl: String!): Any!
   deleteUser(id: ID!): User!
   activateUser(id: ID!): Any!
   resetPassword(email: String!, newPassword: String!): Any!
 
-  followUser(id1: ID!, id2: ID!): Any!  @auth
-  unFollowUser(id1: ID!, id2: ID!): Any!  @auth
-  visitUser(id1: ID!, id2: ID!): Any!  @auth
+  followUser(id1: ID!, id2: ID!): Any! @auth
+  unFollowUser(id1: ID!, id2: ID!): Any! @auth
+  visitUser(id1: ID!, id2: ID!): Any! @auth
 }

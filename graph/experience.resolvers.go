@@ -43,7 +43,7 @@ func (r *mutationResolver) UpdateExperience(ctx context.Context, id string, inpu
 	var model *model.Experience
 
 	if err := r.DB.First(&model, "id = ?", id).Error; err != nil {
-		return "Error", err
+		panic(err)
 	}
 	model.Title = input.Title
 	model.EmploymentType = input.EmploymentType

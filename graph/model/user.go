@@ -10,10 +10,8 @@ type User struct {
 	IsActive          bool              `json:"is_active"`
 	ProfilePicture    string            `json:"profile_picture"`
 	BackgroundPicture string            `json:"background_picture"`
-	Headline          string            `json:"headline"`
 	About             string            `json:"about"`
 	Location          string            `json:"location"`
-	ProfileLink       string            `json:"profileLink"` 
 	Visits            []*User           `json:"Visit" gorm:"many2many:user_visits"`
 	Follows           []*User           `json:"Follow" gorm:"many2many:user_follows"`
 	Comment           []*Comment        `json:"Comment" gorm:"foreignKey:CommenterID;"`
@@ -50,5 +48,4 @@ type ConnectRequest struct {
 	FromUser   *User  `json:"fromUser"`
 	ToUser     *User  `json:"toUser"`
 	ToUserID   string `json:"toUserId"`
-	Message    string `json:"message"`
 }

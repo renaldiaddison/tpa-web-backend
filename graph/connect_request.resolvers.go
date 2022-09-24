@@ -24,12 +24,11 @@ func (r *connectRequestResolver) ToUser(ctx context.Context, obj *model.ConnectR
 }
 
 // AddConnectRequest is the resolver for the addConnectRequest field.
-func (r *mutationResolver) AddConnectRequest(ctx context.Context, fromUserID string, toUserID string, message string) (*model.ConnectRequest, error) {
+func (r *mutationResolver) AddConnectRequest(ctx context.Context, fromUserID string, toUserID string) (*model.ConnectRequest, error) {
 	modelConnectRequest := &model.ConnectRequest{
 		ID:         uuid.NewString(),
 		FromUserID: fromUserID,
 		ToUserID:   toUserID,
-		Message:    message,
 	}
 
 	return modelConnectRequest, r.DB.Create(modelConnectRequest).Error

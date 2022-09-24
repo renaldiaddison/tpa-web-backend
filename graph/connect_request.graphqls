@@ -2,10 +2,9 @@ type ConnectRequest {
     id:ID!
     fromUser:User! @goField(forceResolver: true)
     toUser:User! @goField(forceResolver: true)
-    message:String!
 }
 
 extend type Mutation {
-    addConnectRequest(fromUserId:ID! , toUserId:ID! , message:String!) : ConnectRequest!
+    addConnectRequest(fromUserId:ID! , toUserId:ID!) : ConnectRequest!
     deleteConnectRequest(fromUserId:ID! , toUserId:ID!) : ConnectRequest!
 }

@@ -27,15 +27,16 @@ func (r *mutationResolver) Register(ctx context.Context, input model.NewUser) (i
 }
 
 // UpdateUser is the resolver for the updateUser field.
-func (r *mutationResolver) UpdateUser(ctx context.Context, id string, input model.NewUser) (*model.User, error) {
+func (r *mutationResolver) UpdateUser(ctx context.Context, id string, input model.UpdateUser) (*model.User, error) {
 	model := new(model.User)
 	if err := r.DB.First(model, "id = ?", id).Error; err != nil {
 		panic(err)
 	}
-	model.Email = input.Email
 	model.FirstName = input.FirstName
 	model.LastName = input.LastName
-	model.Password = input.Password
+	model.AdditionalName = input.AdditionalName
+	model.About = input.About
+	model.Location = input.Location
 	return model, r.DB.Save(model).Error
 }
 
@@ -157,6 +158,7 @@ func (r *mutationResolver) VisitUser(ctx context.Context, id1 string, id2 string
 	r.DB.Table("user_visits").First(&modelVisit, "user_id = ? AND visit_id = ?", id1, id2)
 
 	if modelVisit.UserID != "" {
+		fmt.Print("masuk")
 		var modelVisits []*model.Visit
 		r.DB.Table("user_visits").Find(&modelVisits, "visit_id = ?", id2)
 
@@ -164,7 +166,7 @@ func (r *mutationResolver) VisitUser(ctx context.Context, id1 string, id2 string
 			"length": len(modelVisits),
 		}, nil
 	} else {
-
+		fmt.Print("masuk2")
 		modelVisit.UserID = id1
 		modelVisit.VisitID = id2
 
@@ -286,7 +288,7 @@ func (r *userResolver) Visits(ctx context.Context, obj *model.User) ([]*model.Vi
 func (r *userResolver) Follows(ctx context.Context, obj *model.User) ([]*model.Follow, error) {
 	var modelFollow []*model.Follow
 
-	return modelFollow, r.DB.Table("user_follows").Find(&modelFollow, "follow_id = ? ", obj.ID).Error
+	return modelFollow, r.DB.Table("user_follows").Find(&modelFollow, "user_id = ? ", obj.ID).Error
 }
 
 // Block is the resolver for the Block field.
