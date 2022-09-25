@@ -216,7 +216,7 @@ type ComplexityRoot struct {
 		Posts             func(childComplexity int, limit int, offset int) int
 		RepliedToComments func(childComplexity int, limit int, offset int, commentID string) int
 		Search            func(childComplexity int, keyword string, limit int, offset int) int
-		SearchHastag      func(childComplexity int, keyword string, limit int, offset int) int
+		SearchHashtag     func(childComplexity int, keyword string, limit int, offset int) int
 		UserEducation     func(childComplexity int, userID string) int
 		UserExperience    func(childComplexity int, userID string) int
 		UserNotification  func(childComplexity int, toUserID string) int
@@ -337,7 +337,7 @@ type QueryResolver interface {
 	Posts(ctx context.Context, limit int, offset int) ([]*model.Post, error)
 	GetResetLink(ctx context.Context, id string) (*model.ResetPasswordLink, error)
 	Search(ctx context.Context, keyword string, limit int, offset int) (*model.Search, error)
-	SearchHastag(ctx context.Context, keyword string, limit int, offset int) (*model.Search, error)
+	SearchHashtag(ctx context.Context, keyword string, limit int, offset int) (*model.Search, error)
 }
 type SearchResolver interface {
 	Users(ctx context.Context, obj *model.Search) ([]*model.User, error)
@@ -1390,17 +1390,17 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.Search(childComplexity, args["Keyword"].(string), args["Limit"].(int), args["Offset"].(int)), true
 
-	case "Query.SearchHastag":
-		if e.complexity.Query.SearchHastag == nil {
+	case "Query.SearchHashtag":
+		if e.complexity.Query.SearchHashtag == nil {
 			break
 		}
 
-		args, err := ec.field_Query_SearchHastag_args(context.TODO(), rawArgs)
+		args, err := ec.field_Query_SearchHashtag_args(context.TODO(), rawArgs)
 		if err != nil {
 			return 0, false
 		}
 
-		return e.complexity.Query.SearchHastag(childComplexity, args["Keyword"].(string), args["Limit"].(int), args["Offset"].(int)), true
+		return e.complexity.Query.SearchHashtag(childComplexity, args["Keyword"].(string), args["Limit"].(int), args["Offset"].(int)), true
 
 	case "Query.userEducation":
 		if e.complexity.Query.UserEducation == nil {
@@ -1938,7 +1938,7 @@ extend type Mutation {
 
 extend type Query{
   Search(Keyword : String!, Limit:Int!, Offset:Int!) : Search!  @auth
-  SearchHastag(Keyword : String!, Limit:Int!, Offset:Int!) : Search!  @auth
+  SearchHashtag(Keyword : String!, Limit:Int!, Offset:Int!) : Search!  @auth
 }`, BuiltIn: false},
 	{Name: "../user.graphqls", Input: `# GraphQL schema example
 #
@@ -2845,7 +2845,7 @@ func (ec *executionContext) field_Query_Posts_args(ctx context.Context, rawArgs 
 	return args, nil
 }
 
-func (ec *executionContext) field_Query_SearchHastag_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_Query_SearchHashtag_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
 	var arg0 string
@@ -10198,8 +10198,8 @@ func (ec *executionContext) fieldContext_Query_Search(ctx context.Context, field
 	return fc, nil
 }
 
-func (ec *executionContext) _Query_SearchHastag(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Query_SearchHastag(ctx, field)
+func (ec *executionContext) _Query_SearchHashtag(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_SearchHashtag(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -10213,7 +10213,7 @@ func (ec *executionContext) _Query_SearchHastag(ctx context.Context, field graph
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		directive0 := func(rctx context.Context) (interface{}, error) {
 			ctx = rctx // use context from middleware stack in children
-			return ec.resolvers.Query().SearchHastag(rctx, fc.Args["Keyword"].(string), fc.Args["Limit"].(int), fc.Args["Offset"].(int))
+			return ec.resolvers.Query().SearchHashtag(rctx, fc.Args["Keyword"].(string), fc.Args["Limit"].(int), fc.Args["Offset"].(int))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
 			if ec.directives.Auth == nil {
@@ -10249,7 +10249,7 @@ func (ec *executionContext) _Query_SearchHastag(ctx context.Context, field graph
 	return ec.marshalNSearch2ᚖgithubᚗcomᚋrenaldiaddisonᚋtpaᚑwebᚑbackendᚋgraphᚋmodelᚐSearch(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Query_SearchHastag(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Query_SearchHashtag(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Query",
 		Field:      field,
@@ -10272,7 +10272,7 @@ func (ec *executionContext) fieldContext_Query_SearchHastag(ctx context.Context,
 		}
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Query_SearchHastag_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+	if fc.Args, err = ec.field_Query_SearchHashtag_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return
 	}
@@ -15476,7 +15476,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			out.Concurrently(i, func() graphql.Marshaler {
 				return rrm(innerCtx)
 			})
-		case "SearchHastag":
+		case "SearchHashtag":
 			field := field
 
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
@@ -15485,7 +15485,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Query_SearchHastag(ctx, field)
+				res = ec._Query_SearchHashtag(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}

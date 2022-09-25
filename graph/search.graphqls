@@ -6,5 +6,5 @@ type Search{
 
 extend type Query{
   Search(Keyword : String!, Limit:Int!, Offset:Int!) : Search!  @auth
-  SearchHastag(Keyword : String!, Limit:Int!, Offset:Int!) : Search!  @auth
+  SearchHashtag(Keyword : String!, Limit:Int!, Offset:Int!) : Search!  @auth
 }

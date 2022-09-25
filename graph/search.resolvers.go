@@ -5,6 +5,7 @@ package graph
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/renaldiaddison/tpa-web-backend/graph/generated"
 	"github.com/renaldiaddison/tpa-web-backend/graph/model"
@@ -37,21 +38,9 @@ func (r *queryResolver) Search(ctx context.Context, keyword string, limit int, o
 	return search, nil
 }
 
-// SearchHastag is the resolver for the SearchHastag field.
-func (r *queryResolver) SearchHastag(ctx context.Context, keyword string, limit int, offset int) (*model.Search, error) {
-	search := new(model.Search)
-
-	var modelPosts []*model.Post
-
-	// SEARCH POSTS BY KEYWOARD
-
-	if err := r.DB.Limit(limit).Offset(offset).Find(&modelPosts, "text like ? ", "%#"+keyword+"%").Error; err != nil {
-		return nil, err
-	}
-
-	search.Posts = modelPosts
-
-	return search, nil
+// SearchHashtag is the resolver for the SearchHashtag field.
+func (r *queryResolver) SearchHashtag(ctx context.Context, keyword string, limit int, offset int) (*model.Search, error) {
+	panic(fmt.Errorf("not implemented"))
 }
 
 // Users is the resolver for the Users field.
@@ -96,3 +85,23 @@ func (r *searchResolver) Posts(ctx context.Context, obj *model.Search) ([]*model
 func (r *Resolver) Search() generated.SearchResolver { return &searchResolver{r} }
 
 type searchResolver struct{ *Resolver }
+
+// !!! WARNING !!!
+// The code below was going to be deleted when updating resolvers. It has been copied here so you have
+// one last chance to move it out of harms way if you want. There are two reasons this happens:
+//  - When renaming or deleting a resolver the old code will be put in here. You can safely delete
+//    it when you're done.
+//  - You have helper methods in this file. Move them out to keep these resolver files clean.
+func (r *queryResolver) SearchHastag(ctx context.Context, keyword string, limit int, offset int) (*model.Search, error) {
+	search := new(model.Search)
+
+	var modelPosts []*model.Post
+
+	if err := r.DB.Limit(limit).Offset(offset).Find(&modelPosts, "text like ? ", "%#"+keyword+"%").Error; err != nil {
+		return nil, err
+	}
+
+	search.Posts = modelPosts
+
+	return search, nil
+}

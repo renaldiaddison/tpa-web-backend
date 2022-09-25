@@ -288,7 +288,7 @@ func (r *userResolver) Visits(ctx context.Context, obj *model.User) ([]*model.Vi
 func (r *userResolver) Follows(ctx context.Context, obj *model.User) ([]*model.Follow, error) {
 	var modelFollow []*model.Follow
 
-	return modelFollow, r.DB.Table("user_follows").Find(&modelFollow, "user_id = ? ", obj.ID).Error
+	return modelFollow, r.DB.Table("user_follows").Find(&modelFollow, "follow_id = ? ", obj.ID).Error
 }
 
 // Block is the resolver for the Block field.
