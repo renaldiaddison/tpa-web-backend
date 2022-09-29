@@ -1,8 +1,6 @@
 package mail
 
 import (
-	"fmt"
-
 	"gopkg.in/gomail.v2"
 )
 
@@ -24,7 +22,6 @@ func SendEmail(text string, subject string, to string, link string) {
 	dial := gomail.NewDialer(SMTP_HOST, SMTP_PORT, SENDER_EMAIL, SENDER_EMAIL_PASSWORD)
 
 	if err := dial.DialAndSend(mail); err != nil {
-		fmt.Println(err)
 		panic(err)
 	}
 

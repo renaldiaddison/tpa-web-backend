@@ -5,7 +5,6 @@ package graph
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -52,11 +51,7 @@ func (r *mutationResolver) CreatePost(ctx context.Context, input model.InputPost
 	userIdList = append(userIdList, connetions2Ids...)
 	userIdList = lo.Uniq(userIdList)
 
-	fmt.Println("=====================")
 	for _, userId := range userIdList {
-		fmt.Println("=====================")
-		fmt.Println(userId)
-		fmt.Println("=====================")
 		service.AddNotification(r.DB, ctx, userId, input.SenderID, "Create A New Post")
 	}
 

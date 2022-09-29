@@ -1,10 +1,12 @@
 type Search{
-  Users : [User!]! @goField(forceResolver: true)
-  Posts : [Post!]! @goField(forceResolver: true)
+  Users: [User!]! @goField(forceResolver: true)
+  Posts: [Post!]! @goField(forceResolver: true)
 }
 
 
 extend type Query{
-  Search(Keyword : String!, Limit:Int!, Offset:Int!) : Search!  @auth
-  SearchHashtag(Keyword : String!, Limit:Int!, Offset:Int!) : Search!  @auth
+  Search(Keyword: String!) : Search!  @auth
+  SearchHashtag(Keyword: String!, Limit:Int!, Offset:Int!) : Search!  @auth
+  SearchPost(Keyword: String!, Limit: Int!, Offset: Int!) : Search! @auth
+  SearchUser(Keyword: String!, Limit: Int!, Offset: Int!) : Search!  @auth
 }

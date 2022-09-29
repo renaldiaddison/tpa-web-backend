@@ -5,7 +5,6 @@ package graph
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/renaldiaddison/tpa-web-backend/auth"
 	"github.com/renaldiaddison/tpa-web-backend/graph/generated"
@@ -158,7 +157,6 @@ func (r *mutationResolver) VisitUser(ctx context.Context, id1 string, id2 string
 	r.DB.Table("user_visits").First(&modelVisit, "user_id = ? AND visit_id = ?", id1, id2)
 
 	if modelVisit.UserID != "" {
-		fmt.Print("masuk")
 		var modelVisits []*model.Visit
 		r.DB.Table("user_visits").Find(&modelVisits, "visit_id = ?", id2)
 
@@ -166,7 +164,6 @@ func (r *mutationResolver) VisitUser(ctx context.Context, id1 string, id2 string
 			"length": len(modelVisits),
 		}, nil
 	} else {
-		fmt.Print("masuk2")
 		modelVisit.UserID = id1
 		modelVisit.VisitID = id2
 
@@ -235,8 +232,6 @@ func (r *queryResolver) UserSuggestion(ctx context.Context, userID string) ([]*m
 		return nil, err
 	}
 
-	fmt.Println(userIdList)
-
 	userSuggestion1Ids := lo.Map(friendConnection1, func(connectionData *model.Connection, _ int) string {
 		return connectionData.User2ID
 	})
@@ -248,7 +243,6 @@ func (r *queryResolver) UserSuggestion(ctx context.Context, userID string) ([]*m
 	userSuggestionId = append(userSuggestionId, userSuggestion1Ids...)
 	userSuggestionId = append(userSuggestionId, userSuggestion2Ids...)
 	userSuggestionId = lo.Uniq(userSuggestionId)
-	fmt.Println(userSuggestionId)
 
 	var finalUserSuggestionId []string
 	for _, suggestionIdUser := range userSuggestionId {
@@ -263,8 +257,6 @@ func (r *queryResolver) UserSuggestion(ctx context.Context, userID string) ([]*m
 			finalUserSuggestionId = append(finalUserSuggestionId, suggestionIdUser)
 		}
 	}
-
-	fmt.Println(finalUserSuggestionId)
 
 	if len(finalUserSuggestionId) == 0 {
 		return nil, gqlerror.Errorf("No Connection User Data")
