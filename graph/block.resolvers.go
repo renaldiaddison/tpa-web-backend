@@ -25,3 +25,14 @@ func (r *mutationResolver) DeleteBlock(ctx context.Context, userID string, block
 
 	return modelBlock, r.DB.Table("user_blocks").Delete(modelBlock, "user_id = ? AND block_id = ?", userID, blockID).Error
 }
+
+// Blocks is the resolver for the blocks field.
+func (r *queryResolver) Blocks(ctx context.Context, userID string) ([]*model.Block, error) {
+	var modelBlocks []*model.Block
+
+	if err := r.DB.Table("user_blocks").Where("user_id = ?", userID).Or("block_id = ?", userID).Find(&modelBlocks).Error; err != nil {
+		return nil, err
+	}
+
+	return modelBlocks, nil
+}

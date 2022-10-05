@@ -269,6 +269,41 @@ func (r *queryResolver) UserSuggestion(ctx context.Context, userID string) ([]*m
 	return modelUsers, nil
 }
 
+// UserConnected is the resolver for the UserConnected field.
+func (r *queryResolver) UserConnected(ctx context.Context, userID string) ([]*model.User, error) {
+	var modelUsers []*model.User
+
+	var userIdList []string
+	var connections1 []*model.Connection
+	var connections2 []*model.Connection
+
+	if err := r.DB.Find(&connections1, "user1_id", userID).Error; err != nil {
+		return nil, err
+	}
+
+	if err := r.DB.Find(&connections2, "user2_id", userID).Error; err != nil {
+		return nil, err
+	}
+
+	connetions1Ids := lo.Map(connections1, func(connectionData *model.Connection, _ int) string {
+		return connectionData.User2ID
+	})
+
+	connetions2Ids := lo.Map(connections2, func(connectionData *model.Connection, _ int) string {
+		return connectionData.User1ID
+	})
+
+	userIdList = append(userIdList, connetions1Ids...)
+	userIdList = append(userIdList, connetions2Ids...)
+	userIdList = lo.Uniq(userIdList)
+
+	if err := r.DB.Find(&modelUsers, userIdList).Error; err != nil {
+		return nil, err
+	}
+
+	return modelUsers, nil
+}
+
 // Visits is the resolver for the visits field.
 func (r *userResolver) Visits(ctx context.Context, obj *model.User) ([]*model.Visit, error) {
 	var modelVisits []*model.Visit

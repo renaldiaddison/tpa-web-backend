@@ -7,3 +7,7 @@ extend type Mutation {
     addBlock(userId:ID! , blockId:ID!) : Block!
     deleteBlock(userId:ID! , blockId:ID!) : Block!
 }
+
+extend type Query {
+    blocks(userId:ID!): [Block!]!
+}

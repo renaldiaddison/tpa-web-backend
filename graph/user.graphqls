@@ -45,6 +45,7 @@ type Query {
   getUserById(id: ID!): User!
   getAllUsers: [User!]!
   UserSuggestion(userId: ID!): [User!]!
+   UserConnected(userId: ID!) : [User!]!
 }
 
 input NewUser {

@@ -18,5 +18,7 @@ func MigrateDatabase() {
 		&model.Job{},
 		&model.LikeComment{},
 		&model.Notification{},
+		&model.Room{},
+		&model.Message{},
 	)
 }

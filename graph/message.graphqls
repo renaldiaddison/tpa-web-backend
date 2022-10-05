@@ -1,0 +1,30 @@
+type Message {
+    id: ID!
+    sender: User! @goField(forceResolver: true)
+    SharePost: Post! @goField(forceResolver: true)
+    ShareProfile: User! @goField(forceResolver: true)
+    text: String!
+    imageUrl: String!
+    createdAt: Time!
+}
+
+type Room {
+    id: ID!
+    user1: User! @goField(forceResolver: true)
+    user2: User! @goField(forceResolver: true)
+    lastMessage: Message @goField(forceResolver: true)
+    messages: [Message!]! @goField(forceResolver: true)
+    createdAt: Time!
+}
+
+extend type Mutation {
+    addRoom(userId1:ID! , userId2:ID!) : Room!
+    addMessage(senderId:ID! , text:String! , imageUrl:String! , roomId:ID!) : Message!
+    addMessageSharePost(senderId:ID!, roomId:ID!, SharePostId:ID! ) : Message!
+    addMessageShareProfile(senderId:ID!, roomId:ID!, ShareProfileId:ID!) : Message!
+}
+
+extend type Query {
+    room(roomId:ID!): Room!
+    rooms(userId:ID!) : [Room!]!
+}
